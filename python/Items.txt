@@ -1,0 +1,35 @@
+{
+	"items": [
+		{
+			"name": "Gold Coin",
+			"description": "Aged pirate loot",
+			# Provide the area ID listed in Rooms.txt
+			# If no area is provided, the item is not
+			# added to the map but can still be dropped
+			# by puzzles
+			"area": "A01"
+		},
+		{
+			"name": "Chest",
+			"description": "Moldy treasure chest",
+			"area": "A05"
+		},
+		{
+			"name": "Spider Egg",
+			"description": "Giant egg with what looks like a spider leg poking out",
+			"area": "A02"
+		},
+		{
+			"name": "Photon Gun",
+			"description": "A laser emitting weapon"
+		},
+		{
+			"name": "Liber Primus",
+			"description": "A mysterious book with strange hieroglyphs and runes"
+		},
+		{
+			"name": "Loose Change",
+			"description": "Common cents"
+		}
+	]
+}

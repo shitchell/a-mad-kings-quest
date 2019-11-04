@@ -1,0 +1,100 @@
+Individual Assignment
+Due Monday, October 21st
+Welcome to the second individual assignment in ITEC-3860! The goal from these series of individual assignments is to warm up your programming skills for the final project deliverable for your text-based adventure game. In games of this sort, the player wanders around from one location to another, picking up objects, and solving simple puzzles. The program you will create for this assignment is considerably less elaborate than the final project deliverable and it therefore limited in terms of number of rooms, items, monsters etc. Even so, you can still write a program that captures much of the spirit and flavor of the final game. 
+This handout contains what you need to know about the first individual deliverable along with a number of hints and strategic suggestions.
+
+Section 1
+Overview of the Adventure Game
+
+The adventure game you will implement for this assignment—like any of the text-based adventure games that were demonstrated by your classmates in class earlier this semester—takes place in a virtual world in which you, as the player, move about from one location to another. The locations, which are traditionally called “rooms” even though they may be outside, are described to you through a written textual description that gives you a sense of the geography. You move about in the game by giving commands, most of which are simply an indication of the direction of motion. For example, you might move about as follows:
+
+
+
+
+Overview of the data files
+The adventure program you will create for this assignment and all followed up assignments is entirely data driven. Just like your final project. The program itself doesn’t know the details of the game geography, the objects that are distributed among the various rooms, or even the words used to move from place to place. All such information is supplied in the form of data files, which the program uses to control its own operation. The ultimate goal is if you run the program with different data files, the same program will guide its players through different adventure games.
+
+For this first assignment, there must be an associated data file:
+    • Rooms.txt, which defines the rooms and the connections between them.
+For example, the room data file could have the following information:
+    • A room number, which must be greater than zero 
+    • Its name, which is a one-line string identifying the room 
+    • Its description, which is a multiline array describing the room  
+    • A flag indicating whether the room has been visited 
+    • A navigation table specifying the exits and where they lead
+For example, this data file is not a Java program, but is instead text file that describe the rooms and their connections.
+
+The program you will write for this assignment must:
+    1- Read this file into an internal data structure, which it then displayed to the user on the console to guide the player through the game.
+    2- Allow the player to be able to move between rooms by reading and executing navigation commands entered by the user through the console
+    3- Your program should be able to track visited rooms and display the message visited on the console if the player revisit a room.
+    4- A total of 6 rooms is enough for this assignment with a minim of three navigation commands
+_____________________________________________________________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Assumptions:
+    1- Player is able to navigate between rooms
+    2- Data is being read from a text file including rooms’ descriptions, connections and navigations.
+    3- Your code is keeping track of visited rooms
+Goal: implement the items and puzzle feature as directed below.
+Items feature:
+Now that the player is able to navigate between different rooms, for the second assignment deliverable your goal is to allow the player to interact with 3 different items of your choice in three different rooms. Interaction behaviuor with items should include the following commands:
+    1- Examine/Inspect/Explore item: this behaviuor will allow the player to retrieve the description of the examined item. Your game should display the description of the examined item to the console/GUI.
+    2- Pick up item: this command will add the item to a virtual inventory. 
+        a. Your code should display that the item has been added to the inventory by displaying the picked up item to the items’ list and display it on the console.
+        b. Upon picking an item up it should disappear from the room and the player should not see the item again when visiting the room.
+    3- Drop off item: this command should allow the player to access any item in the inventory and drop it off. 
+        a. This behaviuor is reflected to the player by deleting the item from the items’ list displayed on the console
+        b. Upon dropping the item off the item should be dropped in the current room and be available for the player to interact with again  
+        c. Dropped off items must be available for reexamine and re-pickup.
+Under the assumption that you have followed the suggested text file structure (You are allowed to use different structure as long as you are able to fulfill the requirements) your text file for this deliverable could look like the one in the figure below:
+
+You will need to consider adding another text file that holds the items information e.g. the figure below:
+ 
+The entries in the items text file can consist of three lines indicating the word used to refer to the item, the description of the item that appears when you encounter it, and the room number in which the item  is initially located. For example, this file indicates that the keys are in room 3, the lamp is room 8, and the rod is in room 12. 
+Hint: The items will move around in the game as the player picks them up or drops them off. Therefore, your implementation must therefore provide a facility (internal data structure) for storing objects in a room or in the user’s inventory of items. The easiest approach is to use an ArrayList, which makes it easy to add and remove items.
+
+Puzzle feature:
+Your goal is to allow the player to interact with one puzzle of your choice in any of the rooms. The interaction behavior with the puzzle should include the following commands:
+    1- Examine/Inspect/Explore puzzle: this behaviuor will allow the player to retrieve the description of the examined puzzle. Your game should display the description of the examined puzzle to the console/GUI.
+    2- Solve: 
+        a. This behaviuor will give the player a chance to solve the puzzle by entering a keyword to answer the puzzle.
+        b. You need to keep track of number of attempts and allow the player 3 attempts to answer the puzzle
+        c. If the player is able to solve the puzzle correctly within three attempts, the game should display a congratulation message to the player to inform the player that the puzzle has been solved correctly. 
+        d. Upon answering the puzzle correctly, it should disappear from the game and never show up again while navigating between rooms
+        e. If the player is not able to solve the puzzle correctly after three attempts, the game will display “failed to solve” message to the player.
+        f. Upon failing to answer a puzzle correctly after three attempts the puzzle should disappear from the game and never show up again while navigating between rooms.
+
+Hit: in the text file, you can link the puzzle to the room similar to items. You need to consider adding puzzle text file to hold the following information puzzle name, description, room the puzzle is located in.
+
+
+Make sure to pay attention to the following:
+    • Submit your project by exporting the project, zipping it and submitting it on d2l before the due date. DON’T SUBMIT individual classes.
+    • When working with text file keep your text file within the project folder (root folder) and DON’T fix the file path within the code e.g. c:\users\sam\ etc…..
+    • When I import and run your code it should compile and run properly to reflect the requested behaviuor in this assignment.
+    • You shouldn’t hard code any of the game elements in the code. All game information should be coming from text files.
+    • Partial credits won’t be assigned if your code is non runnable.
+    • While your code run and if you have something wrong e.g. missing behaviuor or wrong functionality you will still be assigned partitial credits.
+
