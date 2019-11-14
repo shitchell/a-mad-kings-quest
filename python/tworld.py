@@ -7,7 +7,7 @@ import shlex
 import string
 import random
 import hashlib
-import readline
+import pyreadline
 
 class InvalidSettingsFile(Exception): pass
 class InvalidDirection(Exception): pass
