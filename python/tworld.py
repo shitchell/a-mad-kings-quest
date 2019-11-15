@@ -5,6 +5,7 @@ import json
 import time
 import shlex
 import string
+import string
 import random
 import hashlib
 try:
@@ -80,6 +81,7 @@ class Game:
 						item = Item(item)
 					except Exception:
 						# Invalid item
+						_log("invalid item '%s'" % item, level=3)
 						continue
 					room.add_item(item)
 					_log("added %s to %s" % (
@@ -110,6 +112,7 @@ class Game:
 					puzzle = Puzzle(puzzle)
 				except Exception:
 					# Invalid puzzle
+					_log("invalid puzzle '%s'" % puzzle, level=3)
 					continue
 				room.add_puzzle(puzzle)
 				_log("added %s to %s" % (
@@ -136,6 +139,7 @@ class Game:
 					monster = Monster(monster)
 				except Exception:
 					# Invalid monster
+					_log("invalid monster '%s'" % monster, level=3)
 					continue
 				room.add_monster(monster)
 				self.characters.append(monster)
@@ -152,7 +156,7 @@ class Game:
 			if character.name == name:
 				return character
 	def initiate_attack(self, attacker, victim):
-		attacker
+		pass
 
 class CommandController:
 	def __init__(self, game):
@@ -684,7 +688,11 @@ class Puzzle:
 		self.drops = config.get("drops")
 		_log("creating puzzle '%s'" % self.description, level=2)
 	def solve(self, solution):
-		md5 = _md5(solution.lower())
+		# lowercase solution
+		solution = solution.lower()
+		# remove punctuation
+		solution = solution.translate(str.maketrans(dict.fromkeys(string.punctuation)))
+		md5 = _md5(solution)
 		if md5 in self.solutions:
 			return True
 		else:
