@@ -1,35 +1,28 @@
 {
 	"items": [
 		{
-			"name": "Gold Coin",
-			"description": "Aged pirate loot",
-			# Provide the area ID listed in Rooms.txt
-			# If no area is provided, the item is not
-			# added to the map but can still be dropped
-			# by puzzles
-			"area": "A01"
+			"id": "fod001",
+			"name": "Half Loaf of Bread",
+			"description": "A dry piece of wheat bread that was hastily torn in half. Someone was probably eating this earlier.",
+			"use": {
+				"health": 5
+			}
 		},
 		{
-			"name": "Chest",
-			"description": "Moldy treasure chest",
-			"area": "A05"
+			"id": "arm001",
+			"name": "Tattered Rags",
+			"description": "It's better than wearing nothing, I suppose",
+			"equip": {
+				"armor": 0
+			}
 		},
 		{
-			"name": "Spider Egg",
-			"description": "Giant egg with what looks like a spider leg poking out",
-			"area": "A02"
-		},
-		{
-			"name": "Photon Gun",
-			"description": "A laser emitting weapon"
-		},
-		{
-			"name": "Liber Primus",
-			"description": "A mysterious book with strange hieroglyphs and runes"
-		},
-		{
-			"name": "Loose Change",
-			"description": "Common cents"
+			"id": "wep001",
+			"name": "Old Iron Sword",
+			"description": "Rusty, but reliable. Stick them with the pointy end."
+			"equip": {
+				"attack": 10
+			}
 		}
 	]
 }
