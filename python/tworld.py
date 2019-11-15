@@ -329,6 +329,30 @@ class CommandController:
 				return msg
 		else:
 			return "No puzzle in room!"
+	def do_attack(self, *args):
+		"""Try to attack the monster in the current room"""
+		monster = self.game.map.current_room.monster
+		if monster:
+			damage = player.attack()
+			if puzzle.solve(solution):
+				self.game.map.current_room.remove_puzzle()
+				msg = "Good job!"
+				if puzzle.drops:
+					item = self.game.create_item(puzzle.drops)
+					if item:
+						msg += " Something fell to the floor..."
+						self.game.map.current_room.add_item(item)
+				return msg
+			else:
+				msg = "Incorrect! "
+				if puzzle.attempts:
+					msg += "%i attempts remaining" % puzzle.attempts
+				else:
+					msg += "Puzzle removed :("
+					self.game.map.current_room.remove_puzzle()
+				return msg
+		else:
+			return "No puzzle in room!"
 	### Sue me, sue me, everybody
 	def do_me(self, *args):
 	### Kick me, kick me, don't you black or white me
@@ -400,10 +424,12 @@ class Character:
 		self.description = description
 		self._attack = attack
 	@property
-	def attack(self):
+	def attack(self, character=None):
 		damage = self._attack
 		if self.equipped and self.equipped.is_weapon():
 			damage += self.equipped.attack
+		if character:
+			character.damage(damage)
 		return damage
 	@attack.setter
 	def attack(self, value):
@@ -425,6 +451,12 @@ class Character:
 			_log("Character '%s' is dead" % self.name, level=2)
 		else:
 			_log("Set '%s' health to '%i'" % (self.name, self.health), level=2)
+	def damage(self, value):
+		try:
+			self.health -= value
+		except:
+			_log("invalid damage '%s'" % value)
+		return self.health
 	def add_item(self, item):
 		self.inventory.append(item)
 		_log("Added '%s' to '%s' inventory" % (item.name, self.name), level=2)
