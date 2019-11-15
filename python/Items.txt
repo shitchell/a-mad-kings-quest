@@ -9,6 +9,30 @@
 			}
 		},
 		{
+			"id": "fod002",
+			"name": "Slice of Cheese",
+			"description": "Cheese that's been out for at least a couple of days. A bit moldy, but still edible.",
+			"use": {
+				"health": 10
+			}
+		},
+		{
+			"id": "fod003",
+			"name": "Chicken Breast",
+			"description": "The cooked breast of a common hen. At last, something without mold!",
+			"use": {
+				"health": 20
+			}
+		},
+		{
+			"id": "fod004",
+			"name": "Cut of Veal",
+			"description": "A delicacy around these parts. Tonight, you dine like a king.",
+			"use": {
+				"health": 100
+			}
+		},
+		{
 			"id": "arm001",
 			"name": "Tattered Rags",
 			"description": "It's better than wearing nothing, I suppose",
@@ -17,11 +41,59 @@
 			}
 		},
 		{
+			"id": "arm002",
+			"name": "Padded Leather Armor",
+			"description": "This'll protect you from most pests. A blade? Not so much.",
+			"equip": {
+				"armor": 0.05
+			}
+		},
+		{
+			"id": "arm003",
+			"name": "Mithril Chainmail",
+			"description": "Lighter and stronger than steel. It almost feels unreal!",
+			"equip": {
+				"armor": 0.1
+			}
+		},
+		{
+			"id": "arm004",
+			"name": "Phantasmal Cuirass",
+			"description": "Looks like it's made of smoke, yet feels denser and sturdier than anything you've touched before."",
+			"equip": {
+				"armor": 0.25
+			}
+		},
+		{
 			"id": "wep001",
 			"name": "Old Iron Sword",
 			"description": "Rusty, but reliable. Stick them with the pointy end."
 			"equip": {
 				"attack": 10
+			}
+		},
+		{
+			"id": "wep002",
+			"name": "Trombone",
+			"description": "The most fearsome instrument in the brass family."
+			"equip": {
+				"attack": 20
+			}
+		},
+		{
+			"id": "wep003",
+			"name": "Giant Quill",
+			"description": "A man's mightiest weapon is his quill."
+			"equip": {
+				"attack": 30
+			}
+		},
+		{
+			"id": "wep004",
+			"name": "Mysterious Greatsword",
+			"description": "Huge power seems to emanate from a strange inscription on this sword's blade. It fills you with determination."
+			"equip": {
+				"attack": 50
 			}
 		}
 	]
