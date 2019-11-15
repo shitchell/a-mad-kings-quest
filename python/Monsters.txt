@@ -14,9 +14,173 @@
 				},
 				{
 					"id": "fod002",
-					"probability": 0.1
+					"probability": 0.01
 				}
 			]
-		}
+		},
+		{
+			"id": "mon002",
+			"name": "Obsessive Servant",
+			"description": "Obeys his orders a little too well.",
+			"health": 30,
+			"armor": 0.1,
+			"attack": 5,
+			"items": [
+				{
+					"id": "fod001",
+					"probability": 0.5
+				},
+				{
+					"id": "fod002",
+					"probability": 0.01
+				}
+			]
+		},
+		{
+			"id": "mon003",
+			"name": "Rordon Gamsay",
+			"description": "WHERE'S THE LAMB SAUCE?!",
+			"health": 40,
+			"armor": ,
+			"attack": 1,
+			"items": [
+				{
+					"id": "fod002",
+					"probability": 0.5
+				},
+				{
+					"id": "fod003",
+					"probability": 0.01
+				}
+			]
+		},
+		{
+			"id": "mon004",
+			"name": "Pod Squire",
+			"description": "He's kind of like a lower level knight.",
+			"health": 40,
+			"armor": 0.05,
+			"attack": 10,
+			"items": [
+				{
+					"id": "fod002",
+					"probability": 0.5
+				},
+				{
+					"id": "fod003",
+					"probability": 0.01
+				}
+			]
+		},
+		{
+			"id": "mon005",
+			"name": "Mreddie Fercury",
+			"description": "Thunderbolt of lightening very very frightening.. ME.",
+			"health": 50,
+			"armor": 0,
+			"attack": 15,
+			"items": [
+				{
+					"id": "fod003",
+					"probability": 0.5
+				},
+				{
+					"id": "fod004",
+					"probability": 0.01
+				}
+			]
+		},
+		{
+			"id": "mon006",
+			"name": "Kingsguard",
+			"description": "Their job is pretty self explanatory.",
+			"health": 50,
+			"armor": 0,
+			"attack": 0,
+			"items": [
+			    {
+			        "id": "arm001",
+			        "probability": 1
+			    },
+			    {
+			        "id": "wep001",
+			        "probability": 1
+			    },
+				{
+					"id": "fod003",
+					"probability": 0.5
+				},
+				{
+					"id": "fod004",
+					"probability": 0.01
+				}
+			]
+		},
+		{
+			"id": "bos001",
+			"name": "Elbert Ainsteen",
+			"description": "Cured the swine flue.",
+			"health": 100,
+			"armor": 0,
+			"attack": 0,
+			"items": [
+			    {
+			        "id": "arm002",
+			        "probability": 1
+			    },
+			    {
+			        "id": "wep002",
+			        "probability": 1
+			    },
+				{
+					"id": "fod001",
+					"probability": 1
+				}
+			]
+		},
+		{
+			"id": "bos002",
+			"name": "Kingsguard General James",
+			"description": "Has a silver hand. I wonder what happened to him?",
+			"health": 100,
+			"armor": 0,
+			"attack": 0,
+			"items": [
+			    {
+			        "id": "arm003",
+			        "probability": 1
+			    },
+			    {
+			        "id": "wep003",
+			        "probability": 1
+			    },
+				{
+					"id": "fod002",
+					"probability": 1
+				}
+			]
+		},
+		{
+			"id": "bos003",
+			"name": "Mad King Michael Vsauce II",
+			"description": "Hey Vsauce Michael here. WHAT IS A MAN?",
+			"health": 150,
+			"armor": 20,
+			"attack": 15,
+			"items": [
+			    {
+			        "id": "arm004",
+			        "probability": 1
+			    },
+			    {
+			        "id": "wep004",
+			        "probability": 1
+			    },
+				{
+					"id": "fod003",
+					"probability": 1
+				}
+			]
+		},
 	]
 }
