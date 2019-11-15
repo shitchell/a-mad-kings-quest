@@ -1,0 +1,22 @@
+{
+	"monsters": [
+		{
+			"id": "mon001",
+			"name": "Deranged Stable Boy",
+			"description": "He flails a lead around aimlessly, asking for his horse.",
+			"health": 30,
+			"armor": 0,
+			"attack": 1,
+			"items": [
+				{
+					"id": "fod001",
+					"probability": 0.5
+				},
+				{
+					"id": "fod002",
+					"probability": 0.1
+				}
+			]
+		}
+	]
+}
