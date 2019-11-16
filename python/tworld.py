@@ -19,7 +19,7 @@ class PlayerIsDead(Exception): pass
 
 # Debug level
 # Higher level increases output
-DEBUG = 0
+DEBUG = 4
 def _log(*args, level=3, **kwargs):
 	global DEBUG
 	if DEBUG and DEBUG >= level:
@@ -33,12 +33,12 @@ class Game:
 	def __init__(self, settings_filepath="Rooms.txt"):
 		self.settings_filepath = settings_filepath
 		self.settings = self.read_settings(settings_filepath)
-		self.build_map()
 		self._is_running = True
 		self.cmd_controller = CommandController(self)
 		self.player = Player()
 		self.characters = list()
 		self.characters.append(self.player)
+		self.build_map()
 	def read_settings(self, filepath=None):
 		if not filepath:
 			filepath = self.settings_filepath
@@ -127,11 +127,11 @@ class Game:
 		self.settings.update(settings)
 		for monster in settings.get("monsters", list()):
 			_log("adding", monster, level=4)
-			monster_location = monster.get("area")
+			monster_location = monster.get("area", "random")
 			room = None
 			if monster_location:
 				if monster_location == "random":
-					self.map.get_random_area()
+					room = self.map.get_random_area()
 				else:
 					room = self.map.get_area_by_id(monster_location)
 			if room:
@@ -139,6 +139,7 @@ class Game:
 					monster = Monster(monster)
 				except Exception:
 					# Invalid monster
+					pri()
 					_log("invalid monster '%s'" % monster, level=3)
 					continue
 				room.add_monster(monster)
@@ -329,6 +330,30 @@ class CommandController:
 				return msg
 		else:
 			return "No puzzle in room!"
+	def do_attack(self, *args):
+		"""Try to attack the monster in the current room"""
+		monster = self.game.map.current_room.monster
+		player = self.game.map.player
+		if monster:
+			monster.damage(self.game.player.attack)
+			output = "%s dealt %i damage!\n" % (player.name, player.attack)
+			if monster.health <= 0:
+				# Monster is dead
+				self.game.map.current_room.remove_monster()
+				output += "he ded\n"
+			else:
+				# Monster is alive and well
+				# Attack player
+				player.damage(monster.attack)
+				# Add monster attack value
+				output +="%s dealt %i damage!\n" % (monster.name, monster.attack)
+				if player.health <= 0:
+					# Player is dead
+					raise PlayerIsDead()
+				output += "Player [%i]\tMonster [%i]" % (player.health, monster.health)
+		else:
+			output = "No monster in room!"
+		return output
 	### Sue me, sue me, everybody
 	def do_me(self, *args):
 	### Kick me, kick me, don't you black or white me
@@ -375,6 +400,13 @@ class CommandController:
 			for item in room.items:
 				room_items.append("[%s] %s: %s" % (room.uid, room.name, item.name))
 		return "\n".join(room_items)
+	def mod_monsters(self, *args):
+		"""Return a list of monsters on the map and their locations"""
+		room_monsters = list()
+		for room in self.game.map.rooms:
+			if room.monster:
+				room_monsters.append("[%s] %s: %s" % (room.uid, room.name, monster.name))
+		return "\n".join(room_monsters)
 	def mod_eval(self, *args):
 		"""Execute a python statement"""
 		if args:
@@ -390,20 +422,24 @@ class CommandController:
 			return output
 
 class Character:
-	def __init__(self, name=None, health=100, description="", attack=10):
+	def __init__(self, uid=None, name=None, health=100, description="", attack=10, resistance=0, armor=0, weapon=None, inventory=list()):
+		self.uid = uid
 		if not name:
 			name = "Character%i" % random.randrange(1111,9999)
 		self.name = name
-		self.inventory = list()
-		self.equipped = None
+		self.inventory = inventory
+		self.equipped = {"weapon": weapon, "armor": armor}
 		self.health = health
 		self.description = description
 		self._attack = attack
+		self._resistance = resistance
 	@property
-	def attack(self):
+	def attack(self, character=None):
 		damage = self._attack
-		if self.equipped and self.equipped.is_weapon():
-			damage += self.equipped.attack
+		if self.equipped.get("weapon"):
+			damage += self.equipped.get("weapon").attack
+		if character:
+			character.damage(damage)
 		return damage
 	@attack.setter
 	def attack(self, value):
@@ -416,7 +452,10 @@ class Character:
 		return self._health
 	@health.setter
 	def health(self, value):
-		self._health = value
+		try:
+			self._health = int(value)
+		except:
+			return	
 		if self._health > 100:
 			self._health = 100
 		elif self._health < 0:
@@ -425,6 +464,12 @@ class Character:
 			_log("Character '%s' is dead" % self.name, level=2)
 		else:
 			_log("Set '%s' health to '%i'" % (self.name, self.health), level=2)
+	def damage(self, value):
+		try:
+			self.health -= value
+		except:
+			_log("invalid damage '%s'" % value)
+		return self.health
 	def add_item(self, item):
 		self.inventory.append(item)
 		_log("Added '%s' to '%s' inventory" % (item.name, self.name), level=2)
@@ -478,11 +523,15 @@ class Character:
 class Player(Character): pass
 class Monster(Character):
 	def __init__(self, config):
-		super.__init__(
+		super().__init__(
 			config.get("name"),
 			config.get("health"),
 			config.get("description"),
-			config.get("attack")
+			config.get("attack"),
+			config.get("resistance"),
+			config.get("armor"),
+			config.get("weapon"),
+			config.get("inventory")
 		)
 
 class Map:
@@ -557,6 +606,7 @@ class Room:
 		self.visited = False
 		self.items = list()
 		self.puzzle = None
+		self.monster = None
 	def _sanitize_directions(self):
 		# Ensure that all directions are lowercase
 		for direction in self.directions:
@@ -593,6 +643,12 @@ class Room:
 		self.puzzle = None
 	def get_puzzle(self):
 		return self.puzzle
+	def add_monster(self, monster):
+		self.monster = monster
+	def remove_monster(self):
+		self.monster = None
+	def get_monster(self):
+		return self.monster
 
 class Item:
 	def __init__(self, config):

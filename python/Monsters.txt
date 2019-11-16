@@ -16,7 +16,8 @@
 					"id": "fod002",
 					"probability": 0.01
 				}
-			]
+			],
+			"area": "A01"
 		},
 		{
 			"id": "mon002",
@@ -34,15 +35,16 @@
 					"id": "fod002",
 					"probability": 0.01
 				}
-			]
+			],
+			"area": "A02"
 		},
 		{
 			"id": "mon003",
 			"name": "Rordon Gamsay",
 			"description": "WHERE'S THE LAMB SAUCE?!",
 			"health": 40,
-			"armor": ,
-			"attack": 1,
+			"armor": 0.03,
+			"attack": 12,
 			"items": [
 				{
 					"id": "fod002",
@@ -181,6 +183,6 @@
 					"probability": 1
 				}
 			]
-		},
+		}
 	]
 }
