@@ -95,6 +95,108 @@
 			"equip": {
 				"attack": 50
 			}
+		},
+		{
+		    "id": "cst1",
+		    "name": "Plain Wood Chest",
+		    "description": "A simple looking chest made from iron and pine",
+		    "items": [
+		        "arm004",
+		        "wep004",
+		        "fod004"
+		    ],
+		    "key": "key002"
+		},
+		{
+		    "id": "cst2",
+		    "name": "Chicken Chest",
+		    "description": "This chest is entirely made of reinforced chicken bone. My dog would love this.",
+		    "items": [
+		        "key004",
+		        "fod003"
+		    ]
+		},
+		{
+		    "id": "cst3",
+		    "name": "Library Chest",
+		    "description": "A chest in a library. Surely there are books inside?",
+		    "items": [
+		        "wep003"
+		    ]
+		},
+		{
+		    "id": "cst4",
+		    "name": "Armor Chest",
+		    "description": """There's a label on the chest that says "Free Armour"
+		    """,
+		    "items": [
+		        "arm002"
+		    ]
+		},
+		{
+		    "id": "cst5",
+		    "name": "Foolishly Placed Chest",
+		    "description": "Who put this thing in here?",
+		    "items": [
+		        "arm003"
+		    ]
+		},
+		{
+		    "id": "cst6",
+		    "name": "Treble Clef Chest",
+		    "description": "This chest looks to be made of maple wood and has a treble clef engraved on its sides.",
+		    "items": [
+		        "wep002"
+		    ]
+		},
+		{
+		    "id": "cst7",
+		    "name": "Storage Chest",
+		    "description": "Plain storage chest",
+		    "items": [
+		        "arm002",
+		        "key001"
+		    ]
+		},
+		{
+		    "id": "cst8",
+		    "name": "Painter's Chest",
+		    "description": "A chest splattered with paint",
+		    "items": [
+		        "arm004"
+		    ]
+		},
+		{
+		    "id": "cst9",
+		    "name": "Monk's Chest",
+		    "description": "Plain wooden chest",
+		    "items": [
+		        "key003"
+		    ]
+		},
+		{
+		    "id": "cst10",
+		    "name": "General's Chest",
+		    "description": "Ornately carved wooden chest",
+		    "items": [
+		        "wep003"
+		    ]
+		},
+		{
+		    "id": "cst11",
+		    "name": "Kid's Closet",
+		    "description": "Child's closet",
+		    "items": [
+		        "key002"
+		    ]
+		},
+		{
+		    "id": "cst12",
+		    "name": "Kid's Chest",
+		    "description": "Small, slightly flimsy chest in a child's bedroom. Probably has something of value.",
+		    "items": [
+		        "key005"
+		    ]
 		}
 	]
 }
