@@ -67,7 +67,7 @@
 		{
 			"id": "wep001",
 			"name": "Old Iron Sword",
-			"description": "Rusty, but reliable. Stick them with the pointy end."
+			"description": "Rusty, but reliable. Stick them with the pointy end.",
 			"equip": {
 				"attack": 10
 			}
@@ -75,7 +75,7 @@
 		{
 			"id": "wep002",
 			"name": "Trombone",
-			"description": "The most fearsome instrument in the brass family."
+			"description": "The most fearsome instrument in the brass family.",
 			"equip": {
 				"attack": 20
 			}
@@ -83,7 +83,7 @@
 		{
 			"id": "wep003",
 			"name": "Giant Quill",
-			"description": "A man's mightiest weapon is his quill."
+			"description": "A man's mightiest weapon is his quill.",
 			"equip": {
 				"attack": 30
 			}
@@ -91,7 +91,7 @@
 		{
 			"id": "wep004",
 			"name": "Mysterious Greatsword",
-			"description": "Huge power seems to emanate from a strange inscription on this sword's blade. It fills you with determination."
+			"description": "Huge power seems to emanate from a strange inscription on this sword's blade. It fills you with determination.",
 			"equip": {
 				"attack": 50
 			}
@@ -127,8 +127,7 @@
 		{
 		    "id": "cst4",
 		    "name": "Armor Chest",
-		    "description": """There's a label on the chest that says "Free Armour"
-		    """,
+		    "description": "There is a label on the chest that says \"Free Armour\"",
 		    "items": [
 		        "arm002"
 		    ]
