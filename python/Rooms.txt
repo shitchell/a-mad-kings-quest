@@ -6,77 +6,33 @@
     },
 	"areas": [
 		{
-			"id": "A01",
-			# Name printed in direction listing
-			"name": "large cavern",
-			"type": "room",
-			# Description printed in room inspection
-			"description": "a large, empty cavern dimly lit by torches",
-			# Directions printed in room inspection
-			# Provide a dictionary (associative array) of
-			# direction/roomID key/value pairs
-			"directions": {
-				"north": "A02",
-				"west": "A06"
-			}
+			"id": "rom001",
+			"name": "The great outdoors.",
+			"description": "You awaken laying in a thick patch of grass. The blades are still moist from the dew this morning. Ahead of you lies a castle, while to your sides there is nothing but thick woods. I suppose forwards is the only way to go.",
+			"doors": [
+				"dor001"
+			]
 		},
 		{
-			"id": "A02",
-			"name": "corridor",
-			"type": "hallway",
-			"description": "a long, empty corridor",
-			"directions": {
-				"north": "A03",
-				"south": "A01",
-				"west": "A04"
-			}
-		},
-		{
-			"id": "A04",
-			"name": "chamber",
-			"type": "room",
-			"description": "a small sleeping chamber with a single makeshift bed",
-			"directions": {
-				"east": "A02"
-			}
-		},
-		{
-			"id": "A03",
-			"name": "stairwell",
-			"type": "stairway",
-			"description": "a winding stairwell",
-			"directions": {
-				"bottom": "A05",
-				"top": "A02"
-			}
-		},
-		{
-			"id": "A05",
-			"name": "pit",
-			"type": "pit",
-			"description": "a tiny room with a long, dark pit",
-			"directions": {
-				"back": "A03"
-			}
-		},
-		{
-			"id": "A06",
-			"name": "barracks",
-			"type": "room",
-			"description": "a large room with many beds and strewn blankets",
-			"directions": {
-				"back": "A01",
-				"north": "A07"
-			}
-		},
-		{
-			"id": "A07",
-			"name": "laboratory",
-			"type": "room",
-			"description": "a small lab with various prisms and mirrors.",
-			"directions": {
-				"back": "A06"
-			}
+			"id": "rom002",
+			"name": "Main hall",
+			"description": "Immediately, you step into the main hall. From the outer appearance, the castle looked normal, but there’s a weird atmosphere here. The inside of the castle is solemn, as if the color had been sucked right out of the walls",
+			"inventory": [
+				"fod001",
+				"fod001",
+				"fod001"
+			],
+			"monsters": [
+				"mon001"
+			],
+			"doors": [
+				"dor001",
+				"dor002",
+				"dor006",
+				"dor004",
+				"dor005",
+				"dor007"
+			]
 		}
 	]
 }
