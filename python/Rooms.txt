@@ -7,9 +7,18 @@
 	"areas": [
 		{
 			"id": "A01",
-			"name": "The great outdoors.",
-			"description": "You awaken lying in a thick patch of grass. The blades are still moist from the dew this morning. Ahead of you lies a castle, while to your sides there is nothing but thick woods. I suppose forwards(dor001) is the only way to go",
-			"doors": ["dor001"]
+			# Name printed in direction listing
+			"name": "large cavern",
+			"type": "room",
+			# Description printed in room inspection
+			"description": "a large, empty cavern dimly lit by torches",
+			# Directions printed in room inspection
+			# Provide a dictionary (associative array) of
+			# direction/roomID key/value pairs
+			"directions": {
+				"north": "A02",
+				"west": "A06"
+			}
 		},
 		{
 			"id": "A02",
