@@ -4,6 +4,11 @@
 			"id": "dor001",
 			"key": None,
 			"puzzle": None
+		},
+		{
+			"id": "dor002",
+			"key": "key001",
+			"puzzle": None
 		}
 	]
 }

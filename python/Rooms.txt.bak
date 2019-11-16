@@ -1,0 +1,82 @@
+{
+    "settings": {
+        "welcome": "You wake up in a dark cave...",
+        "name": "Cave Map",
+        "version": "2.0"
+    },
+	"areas": [
+		{
+			"id": "A01",
+			# Name printed in direction listing
+			"name": "large cavern",
+			"type": "room",
+			# Description printed in room inspection
+			"description": "a large, empty cavern dimly lit by torches",
+			# Directions printed in room inspection
+			# Provide a dictionary (associative array) of
+			# direction/roomID key/value pairs
+			"directions": {
+				"north": "A02",
+				"west": "A06"
+			}
+		},
+		{
+			"id": "A02",
+			"name": "corridor",
+			"type": "hallway",
+			"description": "a long, empty corridor",
+			"directions": {
+				"north": "A03",
+				"south": "A01",
+				"west": "A04"
+			}
+		},
+		{
+			"id": "A04",
+			"name": "chamber",
+			"type": "room",
+			"description": "a small sleeping chamber with a single makeshift bed",
+			"directions": {
+				"east": "A02"
+			}
+		},
+		{
+			"id": "A03",
+			"name": "stairwell",
+			"type": "stairway",
+			"description": "a winding stairwell",
+			"directions": {
+				"bottom": "A05",
+				"top": "A02"
+			}
+		},
+		{
+			"id": "A05",
+			"name": "pit",
+			"type": "pit",
+			"description": "a tiny room with a long, dark pit",
+			"directions": {
+				"back": "A03"
+			}
+		},
+		{
+			"id": "A06",
+			"name": "barracks",
+			"type": "room",
+			"description": "a large room with many beds and strewn blankets",
+			"directions": {
+				"back": "A01",
+				"north": "A07"
+			}
+		},
+		{
+			"id": "A07",
+			"name": "laboratory",
+			"type": "room",
+			"description": "a small lab with various prisms and mirrors.",
+			"directions": {
+				"back": "A06"
+			}
+		}
+	]
+}

@@ -1,0 +1,24 @@
+	"areas": [
+		{
+			"id": "A01",
+			# Name printed in direction listing
+			"name": "large cavern",
+			"type": "room",
+			# Description printed in room inspection
+			"description": "a large, empty cavern dimly lit by torches",
+			# Directions printed in room inspection
+			# Provide a dictionary (associative array) of
+			# direction/roomID key/value pairs
+			"directions": {
+				"north": "A02",
+				"west": "A06"
+			}
+		},
+		...
+	],
+
+	"doors": [
+		{
+			"id": 
+		}
+	]

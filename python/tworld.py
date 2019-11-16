@@ -239,16 +239,16 @@ class CommandController:
 		else:
 			return "No items in inventory!"
 	def do_inspect(self, *args):
-		"""Inspect a specific item in the player's inventory or the last picked up item"""
+		"""Inspect a specific item in the player's inventory, a monster, or the last picked up item"""
 		if args:
 			name = " ".join(args)
 		else:
 			name = None
-		item = self.game.player.get_item(name)
+		item = self.game.player.get_item(name) or self.game.current_room.monster
 		if item:
 			return item.inspect()
 		elif name:
-			return "No '%s' in inventory!" % name
+			return "No '%s'!" % name
 		else:
 			return "No items in inventory!"
 	def do_use(self, *args):
@@ -405,7 +405,7 @@ class CommandController:
 		room_monsters = list()
 		for room in self.game.map.rooms:
 			if room.monster:
-				room_monsters.append("[%s] %s: %s" % (room.uid, room.name, monster.name))
+				room_monsters.append("[%s] %s: %s" % (room.uid, room.name, room.monster.name))
 		return "\n".join(room_monsters)
 	def mod_eval(self, *args):
 		"""Execute a python statement"""
@@ -524,6 +524,7 @@ class Player(Character): pass
 class Monster(Character):
 	def __init__(self, config):
 		super().__init__(
+			config.get("uid"),
 			config.get("name"),
 			config.get("health"),
 			config.get("description"),
@@ -592,6 +593,9 @@ class Map:
 				destination_uid = area.directions[direction]
 				destination = self.get_area_by_id(destination_uid)
 				description += "\n - A %s is to the *%s*." % (destination.name, direction)
+		if area.monster:
+			description += "\nMonster:"
+			description += "\n - %s" % area.monster.name
 		if area.visited:
 			description += "\nYou've been here before."
 		return description
