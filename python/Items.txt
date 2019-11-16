@@ -1,35 +1,202 @@
 {
 	"items": [
 		{
-			"name": "Gold Coin",
-			"description": "Aged pirate loot",
-			# Provide the area ID listed in Rooms.txt
-			# If no area is provided, the item is not
-			# added to the map but can still be dropped
-			# by puzzles
-			"area": "A01"
+			"id": "fod001",
+			"name": "Half Loaf of Bread",
+			"description": "A dry piece of wheat bread that was hastily torn in half. Someone was probably eating this earlier.",
+			"use": {
+				"health": 5
+			}
 		},
 		{
-			"name": "Chest",
-			"description": "Moldy treasure chest",
-			"area": "A05"
+			"id": "fod002",
+			"name": "Slice of Cheese",
+			"description": "Cheese that's been out for at least a couple of days. A bit moldy, but still edible.",
+			"use": {
+				"health": 10
+			}
 		},
 		{
-			"name": "Spider Egg",
-			"description": "Giant egg with what looks like a spider leg poking out",
-			"area": "A02"
+			"id": "fod003",
+			"name": "Chicken Breast",
+			"description": "The cooked breast of a common hen. At last, something without mold!",
+			"use": {
+				"health": 20
+			}
 		},
 		{
-			"name": "Photon Gun",
-			"description": "A laser emitting weapon"
+			"id": "fod004",
+			"name": "Cut of Veal",
+			"description": "A delicacy around these parts. Tonight, you dine like a king.",
+			"use": {
+				"health": 100
+			}
 		},
 		{
-			"name": "Liber Primus",
-			"description": "A mysterious book with strange hieroglyphs and runes"
+			"id": "arm001",
+			"name": "Tattered Rags",
+			"description": "It's better than wearing nothing, I suppose",
+			"equip": {
+				"armor": 0
+			}
 		},
 		{
-			"name": "Loose Change",
-			"description": "Common cents"
+			"id": "arm002",
+			"name": "Padded Leather Armor",
+			"description": "This'll protect you from most pests. A blade? Not so much.",
+			"equip": {
+				"armor": 0.05
+			}
+		},
+		{
+			"id": "arm003",
+			"name": "Mithril Chainmail",
+			"description": "Lighter and stronger than steel. It almost feels unreal!",
+			"equip": {
+				"armor": 0.1
+			}
+		},
+		{
+			"id": "arm004",
+			"name": "Phantasmal Cuirass",
+			"description": "Looks like it's made of smoke, yet feels denser and sturdier than anything you've touched before."",
+			"equip": {
+				"armor": 0.25
+			}
+		},
+		{
+			"id": "wep001",
+			"name": "Old Iron Sword",
+			"description": "Rusty, but reliable. Stick them with the pointy end."
+			"equip": {
+				"attack": 10
+			}
+		},
+		{
+			"id": "wep002",
+			"name": "Trombone",
+			"description": "The most fearsome instrument in the brass family."
+			"equip": {
+				"attack": 20
+			}
+		},
+		{
+			"id": "wep003",
+			"name": "Giant Quill",
+			"description": "A man's mightiest weapon is his quill."
+			"equip": {
+				"attack": 30
+			}
+		},
+		{
+			"id": "wep004",
+			"name": "Mysterious Greatsword",
+			"description": "Huge power seems to emanate from a strange inscription on this sword's blade. It fills you with determination."
+			"equip": {
+				"attack": 50
+			}
+		},
+		{
+		    "id": "cst1",
+		    "name": "Plain Wood Chest",
+		    "description": "A simple looking chest made from iron and pine",
+		    "items": [
+		        "arm004",
+		        "wep004",
+		        "fod004"
+		    ],
+		    "key": "key002"
+		},
+		{
+		    "id": "cst2",
+		    "name": "Chicken Chest",
+		    "description": "This chest is entirely made of reinforced chicken bone. My dog would love this.",
+		    "items": [
+		        "key004",
+		        "fod003"
+		    ]
+		},
+		{
+		    "id": "cst3",
+		    "name": "Library Chest",
+		    "description": "A chest in a library. Surely there are books inside?",
+		    "items": [
+		        "wep003"
+		    ]
+		},
+		{
+		    "id": "cst4",
+		    "name": "Armor Chest",
+		    "description": """There's a label on the chest that says "Free Armour"
+		    """,
+		    "items": [
+		        "arm002"
+		    ]
+		},
+		{
+		    "id": "cst5",
+		    "name": "Foolishly Placed Chest",
+		    "description": "Who put this thing in here?",
+		    "items": [
+		        "arm003"
+		    ]
+		},
+		{
+		    "id": "cst6",
+		    "name": "Treble Clef Chest",
+		    "description": "This chest looks to be made of maple wood and has a treble clef engraved on its sides.",
+		    "items": [
+		        "wep002"
+		    ]
+		},
+		{
+		    "id": "cst7",
+		    "name": "Storage Chest",
+		    "description": "Plain storage chest",
+		    "items": [
+		        "arm002",
+		        "key001"
+		    ]
+		},
+		{
+		    "id": "cst8",
+		    "name": "Painter's Chest",
+		    "description": "A chest splattered with paint",
+		    "items": [
+		        "arm004"
+		    ]
+		},
+		{
+		    "id": "cst9",
+		    "name": "Monk's Chest",
+		    "description": "Plain wooden chest",
+		    "items": [
+		        "key003"
+		    ]
+		},
+		{
+		    "id": "cst10",
+		    "name": "General's Chest",
+		    "description": "Ornately carved wooden chest",
+		    "items": [
+		        "wep003"
+		    ]
+		},
+		{
+		    "id": "cst11",
+		    "name": "Kid's Closet",
+		    "description": "Child's closet",
+		    "items": [
+		        "key002"
+		    ]
+		},
+		{
+		    "id": "cst12",
+		    "name": "Kid's Chest",
+		    "description": "Small, slightly flimsy chest in a child's bedroom. Probably has something of value.",
+		    "items": [
+		        "key005"
+		    ]
 		}
 	]
 }
