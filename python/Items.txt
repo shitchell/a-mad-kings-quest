@@ -59,7 +59,7 @@
 		{
 			"id": "arm004",
 			"name": "Phantasmal Cuirass",
-			"description": "Looks like it's made of smoke, yet feels denser and sturdier than anything you've touched before."",
+			"description": "Looks like it's made of smoke, yet feels denser and sturdier than anything you've touched before.",
 			"equip": {
 				"armor": 0.25
 			}
@@ -127,7 +127,7 @@
 		{
 		    "id": "cst4",
 		    "name": "Armor Chest",
-		    "description": "There's a label on the chest that says \"Free Armour\"",
+		    "description": "There is a label on the chest that says \"Free Armour\"",
 		    "items": [
 		        "arm002"
 		    ]

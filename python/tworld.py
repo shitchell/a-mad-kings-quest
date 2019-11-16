@@ -405,7 +405,7 @@ class CommandController:
 		room_monsters = list()
 		for room in self.game.map.rooms:
 			if room.monster:
-				room_monsters.append("[%s] %s: %s" % (room.uid, room.name, monster.name))
+				room_monsters.append("[%s] %s: %s" % (room.uid, room.name, room.monster.name))
 		return "\n".join(room_monsters)
 	def mod_eval(self, *args):
 		"""Execute a python statement"""
@@ -422,7 +422,17 @@ class CommandController:
 			return output
 
 class Character:
-	def __init__(self, uid=None, name=None, health=100, description="", attack=10, resistance=0, armor=0, weapon=None, inventory=list()):
+	def __init__(self,
+		uid=None,
+		name=None,
+		health=100,
+		description="",
+		attack=10,
+		resistance=0,
+		armor=0,
+		weapon=None,
+		inventory=list()
+	):
 		self.uid = uid
 		if not name:
 			name = "Character%i" % random.randrange(1111,9999)
@@ -524,14 +534,15 @@ class Player(Character): pass
 class Monster(Character):
 	def __init__(self, config):
 		super().__init__(
-			config.get("name"),
-			config.get("health"),
-			config.get("description"),
-			config.get("attack"),
-			config.get("resistance"),
-			config.get("armor"),
-			config.get("weapon"),
-			config.get("inventory")
+			uid = config.get("id"),
+			name = config.get("name"),
+			health = config.get("health"),
+			description = config.get("description"),
+			attack = config.get("attack"),
+			resistance = config.get("armor")
+#			config.get("armor"),
+#			config.get("weapon"),
+#			config.get("inventory")
 		)
 
 class Map:
