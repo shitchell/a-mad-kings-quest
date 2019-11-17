@@ -263,30 +263,36 @@ class GameCommandController(CommandController):
 				return msg
 		else:
 			return "No puzzle in room!"
+
 	def do_attack(self, *args):
 		"""Try to attack the monster in the current room"""
 		monster = self.game.map.current_room.monster
-		player = self.game.map.player
+		player = self.game.player
 		if monster:
-			monster.damage(self.game.player.attack)
-			output = "%s dealt %i damage!\n" % (player.name, player.attack)
-			if monster.health <= 0:
+			damage = player.attack(monster)
+			output = "%s dealt %i damage!\n" % (player.name, damage)
+			if not monster.is_alive():
 				# Monster is dead
-				self.game.map.current_room.remove_monster()
-				output += "he ded\n"
+				self.game.map.current_room.remove_monster(monster.eid)
+				# Get dropped items
+				items = monster.get_dropped_items()
+				if items:
+					self.game.map.current_room.inventory.update(items)
+				output += "he ded"
 			else:
 				# Monster is alive and well
 				# Attack player
-				player.damage(monster.attack)
+				damage = monster.attack(player)
 				# Add monster attack value
-				output +="%s dealt %i damage!\n" % (monster.name, monster.attack)
-				if player.health <= 0:
+				output += "%s dealt %i damage!\n" % (monster.name, damage)
+				if not player.is_alive():
 					# Player is dead
 					raise PlayerIsDead()
 				output += "Player [%i]\tMonster [%i]" % (player.health, monster.health)
 		else:
 			output = "No monster in room!"
 		return output
+
 	### Sue me, sue me, everybody
 	def do_me(self, *args):
 	### Kick me, kick me, don't you black or white me
@@ -381,14 +387,20 @@ class Entity:
 	def inspect(self):
 		return "%s: %s" % (self.name, self.description)
 
+	def __repr__(self):
+		return "<%s [%s]>" % (self.__class__.__qualname__, self.eid)
+
 class Item(Entity):
-	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=1):
+	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None):
 		super().__init__(uid, eid, name, description)
 		# All items can potentially contain other items
 		self.inventory = Inventory()
 		self._equippable = False
 		self._usable = False
-		self.drop_chance = drop_chance
+		try:
+			self.drop_chance = float(drop_chance)
+		except:
+			self.drop_chance = 1
 
 	def can_equip(self):
 		return self._equippable
@@ -399,9 +411,9 @@ class Item(Entity):
 class Key(Item): pass
 
 class Equippable(Item):
-	def __init__(self, uid=None, eid=None, name="", description=""):
+	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None):
 		# All items can potentially contain other items
-		super().__init__(uid, eid, name, description)
+		super().__init__(uid, eid, name, description, drop_chance)
 		self._equippable = True
 
 	def equip(self, player):
@@ -420,9 +432,9 @@ class Equippable(Item):
 		return self in player.equipped
 
 class Usable(Item):
-	def __init__(self, uid=None, eid=None, name="", description=""):
+	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None):
 		# All items can potentially contain other items
-		super().__init__(uid, eid, name, description)
+		super().__init__(uid, eid, name, description, drop_chance)
 		self._usable = True
 
 	def _on_use(self, player, inventory):
@@ -446,8 +458,8 @@ class Usable(Item):
 			inventory.remove(self)
 
 class CombatItem(Equippable):
-	def __init__(self, uid=None, eid=None, name="", description="", damage=0):
-		super().__init__(uid, eid, name, description)
+	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None, damage=0):
+		super().__init__(uid, eid, name, description, drop_chance)
 		self._damage = damage
 		self._equipable = True
 
@@ -470,8 +482,8 @@ class Weapon(CombatItem): pass
 class Armor(CombatItem): pass
 
 class Food(Usable):
-	def __init__(self, uid=None, eid=None, name="", description="", health=0):
-		super().__init__(uid, eid, name, description)
+	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None, health=0):
+		super().__init__(uid, eid, name, description, drop_chance)
 		self._health = health
 
 	@property
@@ -618,12 +630,14 @@ class Character(Entity):
 
 		# Stats
 		self.health = health
-		self._attack = attack
-		self._resistance = resistance
+		self._base_attack = attack
+		self._base_resistance = resistance
 		
 		# Create an inventory and add any provided items
 		self.inventory = Inventory()
 		self.inventory.update(inventory)
+		_log("Added %s to '%s' inventory" % (inventory, self.eid), level=5)
+		_log("'%s' inventory" % self.eid, self.inventory.get_items(), level=5)
 
 		# Equipable items
 		self.equipped = list()
@@ -642,22 +656,6 @@ class Character(Entity):
 			value = str(value)
 		_log("Changed player '%s' name to '%s'" % (self.name, value))
 		self._name = value
-
-	@property
-	def attack(self, character=None):
-		damage = self._attack
-		if self.has_weapon():
-			damage += self.get_weapon().damage
-		if character:
-			character.damage(damage)
-		return damage
-	
-	@attack.setter
-	def attack(self, value):
-		try:
-			self._attack = int(value)
-		except:
-			pass
 	
 	@property
 	def health(self):
@@ -675,12 +673,28 @@ class Character(Entity):
 			_log("Character '%s' is dead" % self.name, level=2)
 		else:
 			_log("Set '%s' health to '%i'" % (self.name, self.health), level=2)
-	
+
+	## Combat
+	def attack(self, character):
+		damage = self.get_attack_damage()
+		character.damage(damage)
+		return damage
+
+	def get_attack_damage(self):
+		damage = self._base_attack
+		if self.has_weapon():
+			damage += self.get_weapon().damage
+		return damage
+
 	def damage(self, value):
 		try:
-			self.health -= value
+			value = int(value)
 		except:
 			_log("invalid damage '%s'" % value)
+		else:
+			if self.has_armor():
+				value -= self.get_armor().damage * value
+			self.health -= value
 		return self.health
 
 	def is_alive(self):
@@ -725,7 +739,7 @@ class Character(Entity):
 	def get_dropped_items(self):
 		items = list()
 		for item in self.inventory.get_items():
-			if random.random() >= item.drop_chance:
+			if random.random() <= item.drop_chance:
 				items.append(item)
 		return items
 
@@ -733,7 +747,7 @@ class Character(Entity):
 	def inspect(self):
 		description = "%s | %i 🗡️ | %i ❤" % (
 			self.name,
-			self.attack,
+			self.get_attack_damage(),
 			self.health
 		)
 		if self.description:
@@ -744,9 +758,6 @@ class Character(Entity):
 				if item.is_equipped(self):
 					description += " [equipped]"
 		return description
-	
-	def __repr__(self):
-		return self.name
 
 class Player(Character): pass
 
@@ -844,11 +855,18 @@ class Room(Entity):
 
 	def remove_monster(self, eid=None, name=None):
 		name = str(name).lower()
+		# Remove monster from monster list
 		for monster in self._monsters:
 			if monster.eid == eid:
 				self._monsters.remove(monster)
 			elif name in monster.name.lower():
 				self._monsters.remove(monster)
+		# Remove room monster if match
+		if self.monster:
+			if self.monster.eid == eid:
+				self.monster = None
+			elif name in self.monster.name:
+				self.monster = None
 
 	def get_monster(self):
 		# If a boss monster exists, return the boss monster
@@ -900,11 +918,17 @@ class EntityFactory:
 
 	# Return an entity object based on an entity id
 	def create_entity(self, eid):
+		_log("Creating entity '%s'" % eid, level=4)
 		if eid:
-			eid = str(eid)
-			_log("Creating entity '%s'" % eid, level=4)
+			if isinstance(eid, dict):
+				custom_dict = eid
+				eid = eid.get("id")
+			else:
+				custom_dict = dict()
+				eid = str(eid)
 			entity_dict = self._entities.get(eid)
 			if entity_dict:
+				entity_dict.update(custom_dict)
 				generator = self._get_entity_generator(eid)
 				if generator:
 					return generator(entity_dict)
@@ -936,7 +960,8 @@ class EntityFactory:
 			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
 			description = entity_dict.get("description"),
-			damage = entity_dict.get("equip", dict()).get("armor")
+			damage = entity_dict.get("equip", dict()).get("armor"),
+			drop_chance = entity_dict.get("probability")
 		)
 
 	# Create a boss monster object
@@ -976,7 +1001,8 @@ class EntityFactory:
 			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
 			description = entity_dict.get("description"),
-			health = entity_dict.get("health")
+			health = entity_dict.get("health"),
+			drop_chance = entity_dict.get("probability")
 		)
 
 	# Create a key object
@@ -985,29 +1011,33 @@ class EntityFactory:
 		return Key(
 			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
-			description = entity_dict.get("description")
+			description = entity_dict.get("description"),
+			drop_chance = entity_dict.get("probability")
 		)
 
 	# Create a monster object
 	def _create_mon(self, entity_dict):
 		# eid, name, description, health, attack, resistance, armor, weapon, inventory
-		# Create the armor if it exists
-		armor = self.create_entity(entity_dict.get("armor"))
-		# Create the weapon if it exists
-		weapon = self.create_entity(entity_dict.get("weapon"))
 		# Create any items in the inventory
 		items = self.create_entities(entity_dict.get("items"))
-		inventory = Inventory(items)
+		# Grab the weapon and armor from items
+		armor = None
+		weapon = None
+		for item in items:
+			if isinstance(item, Armor):
+				armor = item
+			elif isinstance(item, Weapon):
+				weapon = item
 		return Monster(
 			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
 			description = entity_dict.get("description"),
 			health = entity_dict.get("health"),
 			attack = entity_dict.get("attack"),
-			resistance = entity_dict.get("resistance"),
+			resistance = entity_dict.get("armor"),
 			armor = armor,
 			weapon = weapon,
-			inventory = inventory,
+			inventory = items,
 			is_boss = entity_dict.get("is_boss")
 		)
 
@@ -1048,7 +1078,8 @@ class EntityFactory:
 			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
 			description = entity_dict.get("description"),
-			damage = entity_dict.get("equip", dict()).get("attack")
+			damage = entity_dict.get("equip", dict()).get("attack"),
+			drop_chance = entity_dict.get("probability")
 		)
 
 class Map:
