@@ -42,8 +42,8 @@ def _md5(text):
 class CommandController:
 	def __init__(self, game):
 		self.game = game
-		readline.parse_and_bind("tab: complete")
-		readline.set_completer(self._completer)
+		self._is_active = True
+		self.enable_completion()
 
 	# Method for tab completion
 	def _completer(self, text, state):
@@ -52,16 +52,32 @@ class CommandController:
 			return options[state]
 		else:
 			return None
-		
+
+	def enable_completion(self):
+		readline.parse_and_bind("tab: complete")
+		readline.set_completer(self._completer)
+
+	def is_active(self, value=None):
+		if isinstance(value, bool):
+			self._is_active = value
+		return self._is_active
+
 	def execute_line(self, line):
-		line_parts = shlex.split(line)
+#		line_parts = shlex.split(line)
+		line_parts = line.split(" ")
 		if len(line_parts) > 0:
+			_log("Executing line '%s'" % line, level=3)
 			command = line_parts[0]
 			args = line_parts[1:]
 			func = self.get_command(command)
 			if func:
 				_log("running command '%s'" % command, level=4)
-				return func(*args)
+				try:
+					output = func(*args)
+				except Exception as e:
+					output = str(e)
+				_log("command output:", output, level=4)
+				return output
 			return "%s: command not found" % command
 
 	def get_command(self, command):
@@ -111,6 +127,26 @@ class CommandController:
 		"""Tells you if you're an admin"""
 		return "YOU ARE ROOT"
 
+	@admin
+	def do_commands(self, *args, **kwargs):
+		"""Return all commands and functions"""
+		return self.get_commands()
+
+	@admin
+	def do_eval(self, *args):
+		"""Execute a python statement"""
+		if args:
+			line = " ".join(args)
+			try:
+				if "=" in line:
+					code = compile(line, "<string>", "exec")
+				else:
+					code = compile(line, "<string>", "eval")
+				output = eval(code, {"game": self.game}, globals())
+			except Exception as e:
+				output = "Exception: " + str(e)
+			return output
+
 class GameCommandController(CommandController):
 	def do_go(self, *args):
 		"""Move through a door"""
@@ -119,12 +155,38 @@ class GameCommandController(CommandController):
 				door_id = args[2]
 				# Get door from current room
 				if self.game.map.current_room.has_door(door_id):
+					# Door exists
+					# If a monster is in the room, it attacks the player and prevents
+					# them from leaving
+					if self.game.map.current_room.monster:
+						damage = self.game.map.current_room.monster.attack(self.game.player)
+						output = "%s attacked" % self.game.map.current_room.monster.name
+						if damage:
+							output += " and did %i damage" % damage
+						output += "!\n"
+						output += "The monster stopped you from leaving\n"
+						output += self.game.player.inspect()
+						return output
 					door = self.game.map.current_room.get_door(door_id)
 					if door.key and not self.game.player.inventory.contains(eid=door.key.eid):
 						return "Door requires key '%s'" % door.key
-					elif door.puzzle:
+					elif door.puzzle and not door.puzzle.is_solved():
 						# Activate puzzle
-						door.puzzle.activate()
+						self.game.view.output("A puzzle blocks the door...")
+						# Print puzzle description
+						self.game.view.output(door.puzzle.inspect())
+						self.game.view.output()
+						controller = PuzzleCommandController(self.game, door.puzzle)
+						while controller.is_active():
+							line = self.game.view.input()
+							output = controller.execute_line(line)
+							if output:
+								self.game.view.output(output)
+							if controller.is_active()
+								self.game.view.output()
+						del controller
+						# Re-enable this controller's tab completion
+						self.enable_completion()
 						# If the puzzle still exists after activation, ignore the door
 						if door.puzzle:
 							return
@@ -182,12 +244,12 @@ class GameCommandController(CommandController):
 			if not monster.is_alive():
 				# Monster is dead
 				self.game.map.current_room.remove_monster(monster.eid)
-				output += "You defeated the monster!\n"
+				output += "You defeated the monster!"
 				# Get dropped items
 				items = monster.get_dropped_items()
 				if items:
 					self.game.map.current_room.inventory.update(items)
-					output += "Something fell to the floor..."
+					output += "\nSomething fell to the floor..."
 			else:
 				# Monster is alive and well
 				# Attack player
@@ -273,6 +335,22 @@ class GameCommandController(CommandController):
 		return "\n".join(room_items)
 
 	@CommandController.admin
+	def do_give(self, *args):
+		"""usage: give item_1 item_2...\nAdd items to your inventory"""
+		output = "Added"
+		items_added = False
+		for eid in args:
+			entity = self.game.entity_factory.create_entity(eid)
+			if isinstance(entity, Item):
+				self.game.player.inventory.add(entity)
+				output += " '%s'" % entity.name
+				items_added = True
+		if items_added:
+			return output + "\n" + self.do_me()
+		else:
+			return "No valid item ids provided"
+
+	@CommandController.admin
 	def do_monsters(self, *args):
 		"""Return a list of monsters on the map and their locations"""
 		room_monsters = list()
@@ -281,20 +359,38 @@ class GameCommandController(CommandController):
 				room_monsters.append("[%s] %s: %s" % (room.eid, room.name, monster.name))
 		return "\n".join(room_monsters)
 
+class PuzzleCommandController(CommandController):
+	def __init__(self, game, puzzle):
+		super().__init__(game)
+		self.puzzle = puzzle
+
+	def do_solve(self, *args):
+		"""usage: solve answer\nAttempt to solve the puzzle"""
+		answer = " ".join(args)
+		if self.puzzle.solve(answer):
+			self.is_active(False)
+			return "Correct! The puzzle is deactivated."
+		return "Incorrect"
+
+	def do_hint(self, *args):
+		"""usage: hint\nReceive a hint for the puzzle"""
+		return self.puzzle.get_hint()
+
+	def do_ignore(self, *args):
+		"""usage: ignore\nIgnore the puzzle and leave it unsolved"""
+		self.is_active(False)
+
+	def do_inspect(self, *args):
+		"""usage: inspect\nView the puzzle description"""
+		return self.puzzle.inspect()
+
 	@CommandController.admin
-	def do_eval(self, *args):
-		"""Execute a python statement"""
-		if args:
-			line = " ".join(args)
-			try:
-				if "=" in line:
-					code = compile(line, "<string>", "exec")
-				else:
-					code = compile(line, "<string>", "eval")
-				output = eval(code, {"game": self.game}, globals())
-			except Exception as e:
-				output = "Exception: " + str(e)
-			return output
+	def do_solution(self, *args):
+		"""Provide the puzzle solution"""
+		solutions = list()
+		for x in range(len(self.puzzle._solutions)):
+		    solutions.append("%i: %s" % (x + 1, self.puzzle._solutions[x]))
+		return "\n".join(solutions)
 
 class Entity:
 	def __init__(self, uid=None, eid=None, name="", description=""):
@@ -425,13 +521,18 @@ class Puzzle(Item):
 	def __init__(self, uid=None, eid=None, name="", description="", solutions=list(), hints=list(), attempts=None):
 		super().__init__(uid, eid, name, description)
 		self._solutions = list()
+		for solution in solutions:
+			self.add_solution(solution)
 		self._hints = list()
+		for hint in hints:
+			self.add_hint(hint)
 		self._hint_index = 0
 		try:
 			self._attempts = int(attempts)
 		except:
 			self._attempts = None
 		self._usable = True
+		self._is_solved = False
 
 	def _sanitize_solution(self, solution):
 		# Lowercase
@@ -465,7 +566,9 @@ class Puzzle(Item):
 		guess = self._sanitize_solution(guess)
 		for solution in self._solutions:
 			solution = self._sanitize_solution(solution)
+			_log("Comparing guess '%s' to answer '%s'" % (guess, solution), level=4)
 			if solution == guess:
+				self.is_solved(True)
 				return True
 		# Incorrect guess
 		try:
@@ -475,6 +578,14 @@ class Puzzle(Item):
 		except:
 			pass
 		return False
+
+	def is_solved(self, value=None):
+		if isinstance(value, bool):
+			self._is_solved = value
+		return self._is_solved
+
+	def inspect(self):
+		return self.description
 
 class Inventory:
 	def __init__(self, items=list()):
@@ -961,10 +1072,10 @@ class EntityFactory:
 		)
 
 	# Create a puzzle object
-	def _create_puz(self, entty_dict):
+	def _create_puz(self, entity_dict):
 		# eid, name, description, solutions, hints, attempts
 		return Puzzle(
-			eid = entity_dict.get("eid"),
+			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
 			description = entity_dict.get("description"),
 			solutions = entity_dict.get("solutions"),
@@ -1087,6 +1198,7 @@ class Game:
 		}
 		self._is_running = True
 		self.cmd_controller = None
+		self.view = None
 		self.characters = list()
 		self._map = None
 		map_entity_ids = list()
@@ -1140,6 +1252,13 @@ class Game:
 	def register_controller(self, controller):
 		self.cmd_controller = self.create_controller(controller)
 
+	def create_view(self, view):
+		if issubclass(view, View):
+			return view()
+
+	def register_view(self, view):
+		self.view = self.create_view(view)
+
 	def read_settings(self, filepath=None):
 		if not filepath:
 			filepath = self.settings_filepath
@@ -1173,6 +1292,28 @@ class Game:
 			elif name in character.name.lower():
 				return character
 
+class View: pass
+
+class TUI(View):
+	def __init__(self, prompt=": "):
+		self.prompt = prompt
+		# Command history
+		import atexit
+		histfile = ".tworld_history"
+		try:
+			readline.read_history_file(histfile)
+		except IOError:
+			pass
+		atexit.register(readline.write_history_file, histfile)
+
+	def input(self, prompt=None):
+		if prompt == None:
+			prompt = self.prompt
+		return input(prompt)
+
+	def output(self, value=""):
+		print(value)
+
 def main():
 	# start new game
 	if len(sys.argv) > 1:
@@ -1182,44 +1323,45 @@ def main():
 		
 	game = Game(config_path)
 	game.register_controller(GameCommandController)
+	game.register_view(TUI)
 
     # map info
 	if game.settings.get("name"):
-		print("Map: " + game.settings.get("name"))
+		game.view.output("Map: " + game.settings.get("name"))
 	if game.settings.get("version"):
-		print("Version: " + str(game.settings.get("version")))
+		game.view.output("Version: " + str(game.settings.get("version")))
 	if game.settings.get("ask_name"):
-		game.player.name = input("Your Name: ")
+		game.player.name = game.view.input("Your Name: ")
 
 	# print brief help
-	print()
-	print("Type 'help' for help with commands.")
+	game.view.output()
+	game.view.output("Type 'help' for help with commands.")
 	
 	# welcome message
-	print()
+	game.view.output()
 	if game.settings.get("welcome"):
-		print(game.settings.get("welcome"))
+		game.view.output(game.settings.get("welcome"))
 
 	# starting location
 	game.map.change_room()
-	print("You're in " + game.map.current_room.inspect())
-	print()
+	game.view.output("You're in " + game.map.current_room.inspect())
+	game.view.output()
 
 	# In-game loop
 	while game.is_running() and game.player.is_alive():
 		# run command
 		try:
-			command = input(": ")
+			command = game.view.input()
 		except KeyboardInterrupt:
-			print()
+			game.view.output()
 			continue
 
 		output = game.cmd_controller.execute_line(command)
 		if output:
-			print(output)
+			game.view.output(output)
 
 		# aesthetic line space
-		print()
+		game.view.output()
 
 	if not game.player.is_alive():
 		raise PlayerIsDead()
