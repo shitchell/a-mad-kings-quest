@@ -8,14 +8,30 @@
   - [ ] StartCommandController *start menu commands*
   - [ ] GameCommandController *in-game commands*
   - [ ] AttackCommandController *in-fight commands*
+- [ ] Documentation
+
+## Misc Coding
+
+- [ ] Map.teleport_player(Room room)
+- [ ] Map.get_room(Door door)
+- [ ] Puzzle.activate()
+- [ ] Puzzle Door.puzzle
+- [ ] Key Door.key
+- [ ] Room.has_door(string eid)
+- [ ] Room.get_door(string eid)
+- [ ] Room.inspect()
+- [ ] Inventory.contains(string eid)
 
 # Config files
 
-- [ ] Rooms.txt
-- [ ] Doors.txt
-- [ ] Puzzles.txt
-- [x] Monsters.txt
-- [x] Items.txt
+- [ ] map.json
+  - [x] add examples
+- [ ] keys.json
+  - [ ] add examples
+- [ ] puzzles.json
+  - [ ] add examples
+- [x] monsters.json
+- [x] items.json
 
 # Presentation
 

@@ -1,10 +1,10 @@
 import os
 import re
 import sys
+import uuid
 import json
 import time
 import shlex
-import string
 import string
 import random
 import hashlib
@@ -12,202 +12,131 @@ try:
 	import readline
 except:
 	import pyreadline as readline
+from inspect import getframeinfo, stack
 
+# Exceptions
 class InvalidSettingsFile(Exception): pass
 class InvalidDirection(Exception): pass
 class PlayerIsDead(Exception): pass
+class MapNotFound(Exception): pass
 
 # Debug level
 # Higher level increases output
-DEBUG = 4
-def _log(*args, level=3, **kwargs):
-	global DEBUG
-	if DEBUG and DEBUG >= level:
-		timestamp = time.strftime("[%Y-%m-%d_%H:%M:%S] ")
-		print(timestamp, *args)
+DEBUG = 0
+_log_file = open("log.txt", "a")
+def _log(*args, level=3):
+	timestamp = time.strftime("[%Y-%m-%d_%H:%M:%S]")
+	caller = stack()[1][0]
+	caller_class = caller.f_locals["self"].__class__.__qualname__
+	caller_lineno = getframeinfo(caller).lineno
+	preface = "%s <%s:%i>" % (timestamp, caller_class, caller_lineno)
+	if DEBUG >= level:
+		print(preface + " ", *args)
+	# Always print to log file
+	print(preface + " ", *args, file=_log_file)
+	_log_file.flush()
 
 def _md5(text):
 	return hashlib.md5(text.encode("utf-8")).hexdigest()
 
-class Game:
-	def __init__(self, settings_filepath="Rooms.txt"):
-		self.settings_filepath = settings_filepath
-		self.settings = self.read_settings(settings_filepath)
-		self._entities = dict()
-		self._is_running = True
-		self.cmd_controller = CommandController(self)
-		self.player = Player()
-		self.characters = list()
-		self.characters.append(self.player)
-		self.build_map()
-	def create_entity(self, entity_id):
-		if entity_id in self._entities:
-			return 
-	def read_settings(self, filepath=None):
-		if not filepath:
-			filepath = self.settings_filepath
-		try:
-			with open(filepath) as settings_file:
-				data = settings_file.read()
-				# Remove comments since JSON doesn't allow them
-				# but we want to have commentable files
-				data = re.sub("#.*", "", data)
-				return json.loads(data)
-		except Exception as e:
-			_log("Invalid settings file '%s': %s" % (filepath, str(e)))
-			return {}
-	def build_map(self):
-		if not "areas" in self.settings:
-			raise InvalidSettingsFile("No areas in '%s'" % self.settings_filepath)
-		self.map = Map(self.settings["areas"])
-		self.add_items()
-		self.add_puzzles()
-		self.add_monsters()
-	def create_item(self, name):
-		for item in self.settings.get("items", list()):
-			if item.get("name") == name:
-				return Item(item)
-	def add_items(self, filepath="Items.txt"):
-		settings = self.read_settings(filepath)
-		if settings:
-			self.settings.update(settings)
-		for item in settings.get("items", list()):
-			_log("adding", item, level=4)
-			item_location = item.get("area")
-			if item_location:
-				if item_location == "random":
-					room = self.map.get_random_area()
-				else:
-					room = self.map.get_area_by_id(item_location)
-				# If that location exists on our map...
-				if room:
-					try:
-						item = Item(item)
-					except Exception:
-						# Invalid item
-						_log("invalid item '%s'" % item, level=3)
-						continue
-					room.add_item(item)
-					_log("added %s to %s" % (
-						item.name,
-						room.name
-					), level=3)
-				else:
-					_log("%s skipped" % item, level=3)
-			else:
-				_log("%s skipped" % item)
-	def add_puzzles(self, filepath="Puzzles.txt"):
-		try:
-			settings = self.read_settings(filepath)
-		except Exception as e:
-			raise InvalidSettingsFile("%s: %s" % (filepath, str(e)))
-		self.settings.update(settings)
-		for puzzle in settings.get("puzzles", list()):
-			_log("adding", puzzle, level=4)
-			puzzle_location = puzzle.get("area")
-			room = None
-			if puzzle_location:
-				if puzzle_location == "random":
-					room = self.map.get_random_area()
-				else:
-					room = self.map.get_area_by_id(puzzle_location)
-			if room:
-				try:
-					puzzle = Puzzle(puzzle)
-				except Exception:
-					# Invalid puzzle
-					_log("invalid puzzle '%s'" % puzzle, level=3)
-					continue
-				room.add_puzzle(puzzle)
-				_log("added %s to %s" % (
-					puzzle.description,
-					room.name
-				), level=3)
-	def add_monsters(self, filepath="Monsters.txt"):
-		try:
-			settings = self.read_settings(filepath)
-		except Exception as e:
-			raise InvalidSettingsFile("%s: %s" % (filepath, str(e)))
-		self.settings.update(settings)
-		for monster in settings.get("monsters", list()):
-			_log("adding", monster, level=4)
-			monster_location = monster.get("area", "random")
-			room = None
-			if monster_location:
-				if monster_location == "random":
-					room = self.map.get_random_area()
-				else:
-					room = self.map.get_area_by_id(monster_location)
-			if room:
-				try:
-					monster = Monster(monster)
-				except Exception:
-					# Invalid monster
-					pri()
-					_log("invalid monster '%s'" % monster, level=3)
-					continue
-				room.add_monster(monster)
-				self.characters.append(monster)
-				_log("added %s to %s" % (
-					monster.name,
-					room.name
-				), level=3)
-	def is_running(self):
-		return self._is_running
-	def execute_line(self, line):
-		return self.cmd_controller.execute_line(line)
-	def get_character(self, name):
-		for character in characters:
-			if character.name == name:
-				return character
-	def initiate_attack(self, attacker, victim):
-		pass
-
 class CommandController:
 	def __init__(self, game):
 		self.game = game
+	
 	def execute_line(self, line):
 		line_parts = shlex.split(line)
 		if len(line_parts) > 0:
-			command = line_parts[0].lower()
+			command = line_parts[0]
 			args = line_parts[1:]
-			func = None
-			if hasattr(self, "do_" + command):
-				func = getattr(self, "do_" + command)
-				_log("running player command '%s'" % command, level=4)
-			elif hasattr(self, "mod_" + command):
-				func = getattr(self, "mod_" + command)
-				_log("running admin command '%s'" % command, level=4)
-			else:
-				return "%s: command not found" % command
+			func = self.get_command(command)
 			if func:
+				_log("running command '%s'" % command, level=4)
 				return func(*args)
+			return "%s: command not found" % command
+
+	def get_command(self, command):
+		return self.get_commands().get(command.lower())
+
+	def get_commands(self):
+		commands = dict()
+		command_names = filter(lambda x: x.startswith("do_"), dir(self))
+		for command_name in command_names:
+			func = getattr(self, command_name)
+			if hasattr(func, "admin_command") and self.game.player.name != "admin":
+				continue
+			command_name = command_name[3:]
+			commands[command_name] = func
+		return commands
+
+	def get_command_names(self):
+		commands = self.get_commands()
+		return list(commands.keys())
+
+	def admin(func):
+		def wrapper(self, *args, **kwargs):
+			if self.game.player.name == "admin":
+				return func(self, *args, **kwargs)
+		wrapper.admin_command = True
+		wrapper.__doc__ = func.__doc__
+		return wrapper
+	
 	def do_help(self, *args, **kwargs):
 		"""Prints help wth the game or a specific command"""
 		if args:
 			cmd = args[0]
-			if hasattr(self, "do_" + cmd):
-				return getattr(self, "do_" + cmd).__doc__
-			elif hasattr(self, "mod_" + cmd):
-				return getattr(self, "mod_" + cmd).__doc__
-		else:
-			commands = filter(lambda x: x.startswith("do_"), dir(self))
-			commands = [x[3:] for x in commands]
-			return "Commands: " + ", ".join(commands)
-	def do_move(self, *args):
-		"""Move in a direction indicated by *asterisks*"""
-		if args:
-			direction = args[0].lower()
-			success = self.game.map.move_player(direction)
-			if not success:
-				return "You cannot move that way!"
+			cmd = self.get_command(cmd)
+			if cmd:
+				return cmd.__doc__
 			else:
-				return "You're in " + self.game.map.inspect_area(self.game.map.current_room.uid)
+				return "No such command!"
 		else:
-			return "~You do a little dance in place~"
+			return "Commands: " + ", ".join(self.get_command_names())
+
+	def do_quit(self, *args, **kwargs):
+		"""Exit the game"""
+		sys.exit(1)
+
+	@admin
+	def do_admin(self, *args, **kwargs):
+		"""Tells you if you're an admin"""
+		return "YOU ARE ROOT"
+
+class GameCommandController(CommandController):
+	def do_go(self, *args):
+		"""Move through a door"""
+		if len(args) == 3:
+			if args[0] == "through" and args[1] == "door":
+				door_id = args[2]
+				# Get door from current room
+				if self.game.map.current_room.has_door(door_id):
+					door = self.game.map.current_room.get_door(door_id)
+					if door.key and not self.game.player.inventory.contains(eid=door.key.eid):
+						return "Door requires key '%s'" % door.key
+					elif door.puzzle:
+						# Activate puzzle
+						door.puzzle.activate()
+						# If the puzzle still exists after activation, ignore the door
+						if door.puzzle:
+							return
+					# If the key and puzzle requirements are satisfied, use the door
+					rooms = self.game.map.get_rooms(door=door.eid)
+					_log("Door '%s' matches" % door.eid, rooms, level=4)
+					rooms.remove(self.game.map.current_room)
+					if len(rooms) > 0:
+						new_room = rooms[0]
+						self.game.map.change_room(new_room.eid)
+						return new_room.inspect()
+					else:
+						return "That door doesn't go anywhere!"
+				else:
+					return "No such door in current room"
+		else:
+			return "Invalid syntax!"
+
 	def do_look(self, *args):
 		"""Describe the current location"""
-		return "You're in " + self.game.map.inspect_area(self.game.map.current_room.uid)
+		return "You're in " + self.game.map.current_room.inspect()
+
 	def do_pickup(self, *args):
 		"""Pickup an item in the current room"""
 		if args:
@@ -366,6 +295,8 @@ class CommandController:
 	def do_quit(self, *args):
 		"""Exit the game"""
 		self.game._is_running = False
+
+	## Admin commands
 	def mod_health(self, *args):
 		"""Set player health to value"""
 		if args:
@@ -449,8 +380,7 @@ class Item(Entity):
 	def can_use(self):
 		return self._usable
 
-class Key(Item):
-	pass
+class Key(Item): pass
 
 class Equippable(Item):
 	def __init__(self, uid=None, eid=None, name="", description=""):
@@ -572,7 +502,7 @@ class Puzzle(Item):
 	def add_hint(self, hint):
 		hint = str(hint)
 		if hint not in self._hints:
-			self._hints.append(hint
+			self._hints.append(hint)
 
 	# Rotate through all available hints and return
 	# the next available hint with each call
@@ -666,10 +596,8 @@ class Character(Entity):
 		weapon = None,
 		inventory = list()
 	):
-		# Set a default name if none is provided
-		if not name:
-			name = "Character%i" % random.randrange(1111,9999)
-
+		self._name = None
+		self.name = name
 		super().__init__(uid, eid, name, description)
 
 		# Stats
@@ -685,6 +613,19 @@ class Character(Entity):
 		self.equipped = list()
 		self.equip(armor)
 		self.equip(weapon)
+
+	@property
+	def name(self):
+		return self._name
+
+	@name.setter
+	def name(self, value):
+		if not value:
+			value = "Character%i" % random.randrange(1111, 9999)
+		else:
+			value = str(value)
+		_log("Changed player '%s' name to '%s'" % (self.name, value))
+		self._name = value
 
 	@property
 	def attack(self, character=None):
@@ -728,8 +669,8 @@ class Character(Entity):
 			_log("invalid damage '%s'" % value)
 		return self.health
 
-    def is_alive(self):
-        return self.health > 0
+	def is_alive(self):
+		return self.health > 0
     
 	## Armor
 	def has_armor(self):
@@ -751,7 +692,7 @@ class Character(Entity):
 
 	## Equip items
 	def equip(self, item):
-		if isinstance(item, Equippable)
+		if isinstance(item, Equippable):
 			item.equip(self)
 			# Ensure item is in inventory
 			if item not in self.inventory.get_items():
@@ -787,10 +728,48 @@ class Character(Entity):
 
 class Player(Character): pass
 
-class Monster(Character): pass
+class Monster(Character):
+	def __init__(self,
+		uid = None,
+		eid = None,
+		name = "",
+		description = "",
+		health = 100,
+		attack = 10,
+		resistance = 0,
+		armor = None,
+		weapon = None,
+		inventory = list(),
+		is_boss = False
+	):
+		super().__init__(uid, eid, name, description, health, attack, resistance, armor, weapon, inventory)
+		self._is_boss = is_boss
+
+	def is_boss(self):
+		return bool(self._is_boss)
+
+class Door(Entity):
+	def __init__(self, uid=None, eid=None, puzzle=None, key=None):
+		super().__init__(uid, eid, name=None, description=None)
+		self.add_puzzle(puzzle)
+		self.add_key(key)
+
+	## Puzzle
+	def add_puzzle(self, puzzle):
+		self.puzzle = puzzle
+
+	def has_puzzle(self):
+		return isinstance(self.puzzle, Puzzle)
+
+	## Key
+	def add_key(self, key):
+		self.key = key
+
+	def has_key(self):
+		return isinstance(self.key, Key)
 
 class Room(Entity):
-	def __init__(self, uid=None, eid=None, name="", description="", doors=list(), items=list(), puzzle=None, monster=None):
+	def __init__(self, uid=None, eid=None, name="", description="", doors=list(), items=list(), monsters=None):
 		super().__init__(uid, eid, name, description)
 		# Add doors
 		self.doors = list()
@@ -807,53 +786,76 @@ class Room(Entity):
 		except:
 			pass
 
-		# Add puzzle
-		self.puzzle = None
-
-		# Add monster
+		# Add monsters
+		self._monsters = list()
+		try:
+			for monster in monsters:
+				self.add_monster(monster)
+		except:
+			pass
+		# Monster should be updated each time the room is entered
 		self.monster = None
 
 		# Default to not visited
 		self._visited = False
-	
+
+	## Doors
 	def add_door(self, door):
 		if isinstance(door, Door):
 			self.doors.append(door)
-	
-	def get_directions(self):
-		return [x.lower() for x in self.directions]
-	def has_direction(self, direction):
-		return direction.lower() in self.get_directions()
-	def get_direction(self, direction):
-		# Return the given direction, else the current room if no such direction exists
-		return self.directions.get(direction.lower(), self)
-	def add_item(self, item):
-		self.items.append(item)
-	def get_item(self, name):
-		for item in self.items:
-			if item.name.lower() == name.lower():
-				return item
-	def pop_item(self, name=None):
-		item = None
-		if name:
-			item = self.get_item(name)
-		elif self.items:
-			item = self.items[0]
-		if item:
-			self.items.remove(item)
-			return item
-	def add_puzzle(self, puzzle):
-		self.puzzle = puzzle
-	def remove_puzzle(self):
-		self.puzzle = None
-	def get_puzzle(self):
-		return self.puzzle
+
+	def get_door(self, eid):
+		for door in self.doors:
+			if door.eid == eid:
+				return door
+
+	def has_door(self, eid):
+		return bool(self.get_door(eid))
+
+	def get_doors(self):
+		return self.doors
+
+	## Monsters
 	def add_monster(self, monster):
-		self.monster = monster
-	def remove_monster(self):
-		self.monster = None
+		if isinstance(monster, Monster):
+			self._monsters.append(monster)
+
+	def remove_monster(self, eid=None, name=None):
+		name = str(name).lower()
+		for monster in self._monsters:
+			if monster.eid == eid:
+				self._monsters.remove(monster)
+			elif name in monster.name.lower():
+				self._monsters.remove(monster)
+
 	def get_monster(self):
-		return self.monster
+		# If a boss monster exists, return the boss monster
+		for monster in self._monsters:
+			if monster.is_boss():
+				return monster
+		# Else, return a random normal monster or no monster
+		return random.choice(self._monsters + [None])
+
+	def enter(self):
+		self.monster = self.get_monster()
+
+	## Inspect
+	def inspect(self):
+		description = self.description
+		if self.inventory.size() > 0:
+			description += "\nItems:"
+			for item in self.inventory.get_items():
+				description += "\n - " + item.name
+		if self.doors:
+			description += "\nDoors:"
+			for door in self.doors:
+				description += "\n - " + door.eid
+		if self.monster:
+			description += "\nMonster:"
+			description += "\n - " + self.monster.name
+		if self._visited:
+			description += "\nYou've been here before."
+		return description
 
 class EntityFactory:
 	def __init__(self, entities=list()):
@@ -866,17 +868,34 @@ class EntityFactory:
 	def add_definition(self, entity_dict):
 		# Entity must be a dict...
 		if isinstance(entity_dict, dict):
-			# ...and have at least an id and name
-			if entity_dict.get("id") and entity_dict.get("name"):
+			# ...and have at least an id
+			if entity_dict.get("id"):
 				self._entities[entity_dict.get("id")] = entity_dict
+				_log("Loaded entity definition '%s'" % entity_dict.get("id"), level=4)
 
 	# Return an entity object based on an entity id
 	def create_entity(self, eid):
-		entity_dict = self._entities.get(eid)
-		if entity_dict:
-			generator = self._get_entity_generator(eid)
-			if generator:
-				return generator(entity_dict)
+		if eid:
+			eid = str(eid)
+			_log("Creating entity '%s'" % eid, level=4)
+			entity_dict = self._entities.get(eid)
+			if entity_dict:
+				generator = self._get_entity_generator(eid)
+				if generator:
+					return generator(entity_dict)
+				else:
+					_log("Generator not found for '%s'" % eid, level=4)
+			else:
+				_log("No entity definition found for '%s'" % eid, level=4)
+
+	def create_entities(self, eids):
+		_log("Creating entity list:", eids, level=4)
+		entities = list()
+		if isinstance(eids, list):
+			for eid in eids:
+				entity = self.create_entity(eid)
+				entities.append(entity)
+		return entities
 
 	def _get_entity_generator(self, eid):
 		entity_type = str(eid)[:3]
@@ -887,17 +906,18 @@ class EntityFactory:
 
 	# Create an armor object
 	def _create_arm(self, entity_dict):
+		# eid, name, description, damage
 		return Armor(
 			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
-			description = entity_dict.get("description",
+			description = entity_dict.get("description"),
 			damage = entity_dict.get("equip", dict()).get("armor")
 		)
 
 	# Create a boss monster object
 	def _create_bos(self, entity_dict):
-		## TODO: Create boss entity
-		pass
+		entity_dict["is_boss"] = True
+		return self._create_mon(entity_dict)
 
 	# Create a chest object
 	def _create_cst(self, entity_dict):
@@ -907,99 +927,266 @@ class EntityFactory:
 			description = entity_dict.get("description"),
 		)
 		# Add any contained items
-		if "items" in entity_dict:
-			for eid in entity_dict.get("items"):
-				item = self.create_entity(eid)
-				chest.inventory.add(item)
+		items = self.create_entities(entity_dict.get("items"))
+		chest.inventory.update(items)
 		return chest
 
 	# Create a door object
-	def _create_dor(self, entity):
-		## TODO: Create a door entity
-		pass
+	def _create_dor(self, entity_dict):
+		# eid, puzzle, key
+		# Create a puzzle if the door has a puzzle
+		puzzle = self.create_entity(entity_dict.get("puzzle"))
+		# Create a key if the door has a key
+		key = self.create_entity(entity_dict.get("key"))
+		return Door(
+			eid = entity_dict.get("id"),
+			puzzle = puzzle,
+			key = key
+		)
 	
 	# Create a food object
-	def _create_fod(self, entity):
-		pass
+	def _create_fod(self, entity_dict):
+		# eid, name, description, health
+		return Food(
+			eid = entity_dict.get("id"),
+			name = entity_dict.get("name"),
+			description = entity_dict.get("description"),
+			health = entity_dict.get("health")
+		)
+
+	# Create a key object
+	def _create_key(self, entity_dict):
+		# eid, name, description
+		return Key(
+			eid = entity_dict.get("id"),
+			name = entity_dict.get("name"),
+			description = entity_dict.get("description")
+		)
 
 	# Create a monster object
-	def _create_mon(self, entity):
-		pass
+	def _create_mon(self, entity_dict):
+		# eid, name, description, health, attack, resistance, armor, weapon, inventory
+		# Create the armor if it exists
+		armor = self.create_entity(entity_dict.get("armor"))
+		# Create the weapon if it exists
+		weapon = self.create_entity(entity_dict.get("weapon"))
+		# Create any items in the inventory
+		items = self.create_entities(entity_dict.get("inventory"))
+		inventory = Inventory(items)
+		return Monster(
+			eid = entity_dict.get("id"),
+			name = entity_dict.get("name"),
+			description = entity_dict.get("description"),
+			health = entity_dict.get("health"),
+			attack = entity_dict.get("attack"),
+			resistance = entity_dict.get("resistance"),
+			armor = armor,
+			weapon = weapon,
+			inventory = inventory,
+			is_boss = entity_dict.get("is_boss")
+		)
+
+	# Create a puzzle object
+	def _create_puz(self, entty_dict):
+		# eid, name, description, solutions, hints, attempts
+		return Puzzle(
+			eid = entity_dict.get("eid"),
+			name = entity_dict.get("name"),
+			description = entity_dict.get("description"),
+			solutions = entity_dict.get("solutions"),
+			hints = entity_dict.get("hints")
+		)
+
+	# Create a room object
+	def _create_rom(self, entity_dict):
+		# eid, name, description, doors, items, monster
+		# Create any doors
+		doors = self.create_entities(entity_dict.get("doors"))
+		_log("Created doors for room '%s':" % entity_dict.get("id"), doors, level=4)
+		# Create any items
+		items = self.create_entities(entity_dict.get("items"))
+		# Create any monsters
+		monsters = self.create_entities(entity_dict.get("monsters"))
+		return Room(
+			eid = entity_dict.get("id"),
+			name = entity_dict.get("name"),
+			description = entity_dict.get("description"),
+			doors = doors,
+			items = items,
+			monsters = monsters
+		)
 
 	# Create a weapon object
-	def _create_wep(self, entity):
-		pass
+	def _create_wep(self, entity_dict):
+		# eid, name, description, damage
+		return Weapon(
+			eid = entity_dict.get("id"),
+			name = entity_dict.get("name"),
+			description = entity_dict.get("description"),
+			damage = entity_dict.get("equip", dict()).get("attack")
+		)
 
 class Map:
-	def __init__(self, config):
-		self.rooms = list()
+	def __init__(self, rooms=list()):
+		self._rooms = list()
 		self.current_room = None
-		self._load_rooms(config)
-	def _load_rooms(self, areas):
-		for area in areas:
-			room = Room(area)
+		for room in rooms:
 			self._add_room(room)
-	def _add_room(self, room):
-		self.rooms.append(room)
-	def get_random_area(self):
-		return random.choice(self.rooms)
-	def get_area_by_id(self, uid):
-		for room in self.rooms:
-			if room.uid == uid:
+
+	## Rooms
+	def add_room(self, room):
+		if isinstance(room, Room):
+			self._rooms.append(room)
+
+	def get_random_room(self):
+		return random.choice(self._rooms)
+
+	def get_room(self, eid=None, name=None):
+		if name:
+			name = str(name).lower()
+		for room in self._rooms:
+			if room.eid == eid:
 				return room
-	def get_area_by_name(self, name):
-		for room in self.rooms:
-			if room.name.lower() == name.lower():
+			elif name and name in room.name.lower():
 				return room
-	def move_player(self, direction):
-		if self.current_room.has_direction(direction):
-			destination_uid = self.current_room.get_direction(direction)
-			if destination_uid:
+
+	def get_rooms(self, name=None, door=None):
+		rooms = list()
+		if name:
+			name = str(name).lower()
+		for room in self._rooms:
+			if name and name in room.name.lower():
+				rooms.append(room)
+			elif door and room.has_door(door):
+				rooms.append(room)
+		return rooms
+
+	def change_room(self, eid=None, name=None):
+		if not eid and not name:
+			room = self.get_random_room()
+		else:
+			room = self.get_room(eid, name)
+		if room:
+			if isinstance(self.current_room, Room):
 				self.current_room.visited = True
-				self.teleport_player(destination_uid)
-				return True
+			self.current_room = room
+			room.enter()
+
+class Game:
+	"""TODO: Add doc"""
+	# pylint: disable=too-many-instance-attributes
+	def __init__(self, settings_filepath="config.json"):
+		# Default attributes
+		self._filepaths = {
+			"config": None,
+			"map": None,
+			"entities": list()
+		}
+		self._is_running = True
+		self.cmd_controller = None
+		self.characters = list()
+		self._map = None
+		map_entity_ids = list()
+
+		# Load settings
+		self._filepaths["config"] = settings_filepath
+		self.settings = self.read_settings(settings_filepath)
+		_log("Config:", self.settings, level=4)
+
+		# Load entity definitions
+		self.entity_factory = EntityFactory()
+		for node in os.walk("entities"):
+			directory = node[0]
+			filepaths = node[2]
+			for filepath in filepaths:
+				filepath = os.path.join(directory, filepath)
+				settings = self.read_settings(filepath)
+				if settings:
+					self._filepaths["entities"].append(filepath)
+					for entity_dict in settings.get("entities"):
+						self.entity_factory.add_definition(entity_dict)
+
+		# Load map definitions
+		map_filename = self.settings.get("map")
+		if map_filename:
+			map_filepath = os.path.join("maps", self.settings.get("map"))
+			if not os.path.isfile(map_filepath):
+				raise MapNotFound()
+			settings = self.read_settings(map_filepath)
+			if settings:
+				self._filepaths["map"] = map_filepath
+				for entity_dict in settings.get("entities"):
+					self.entity_factory.add_definition(entity_dict)
+					map_entity_ids.append(entity_dict.get("id"))
 			else:
-				raise InvalidDirection(direction)
-		return False
-	def teleport_player(self, uid=None):
-		if not uid:
-			uids = [room.uid for room in self.rooms]
-			uid = random.choice(uids)
-		destination = self.get_area_by_id(uid)
-		if destination:
-			if self.current_room:
-				self.current_room.visited = True
-			self.current_room = destination
-			return self.inspect_area(self.current_room.uid)
-	def inspect_area(self, uid):
-		area = self.get_area_by_id(uid)
-		description = area.description
-		if area.items:
-			description += "\nItems:"
-			for item in area.items:
-				description += "\n - " + item.name
-		if area.puzzle:
-			description += "\nPuzzle:"
-			for line in area.puzzle.description.split("\n"):
-				description += "\n - " + line
-		if area.directions:
-			description += "\nDirections:"
-			for direction in area.directions:
-				destination_uid = area.directions[direction]
-				destination = self.get_area_by_id(destination_uid)
-				description += "\n - A %s is to the *%s*." % (destination.name, direction)
-		if area.visited:
-			description += "\nYou've been here before."
-		return description
+				raise MapNotFound()
+		else:
+			raise MapNotFound()
+
+		# Create characters
+		self.player = Player()
+		self.characters.append(self.player)
+
+		# Build game map
+		self.build_map(map_entity_ids)
+
+	def create_controller(self, controller):
+		if issubclass(controller, CommandController):
+			return controller(self)
+
+	def register_controller(self, controller):
+		self.cmd_controller = self.create_controller(controller)
+
+	def read_settings(self, filepath=None):
+		if not filepath:
+			filepath = self.settings_filepath
+		try:
+			with open(filepath) as settings_file:
+				data = settings_file.read()
+				_log("Loaded settings file '%s'" % filepath, level=3)
+				# Remove comments since JSON doesn't allow them
+				# but we want to have commentable files
+				data = re.sub("#.*", "", data)
+				return json.loads(data)
+		except Exception as e:
+			_log("Invalid settings file '%s': %s" % (filepath, str(e)))
+			return {}
+
+	def build_map(self, map_entity_ids):
+		self.map = Map()
+		for eid in map_entity_ids:
+			entity = self.entity_factory.create_entity(eid)
+			if isinstance(entity, Room):
+				self.map.add_room(entity)
+
+	def is_running(self):
+		return self._is_running
+
+	def get_character(self, eid=None, name=None):
+		name = str(name).lower()
+		for character in self.characters:
+			if character.eid == eid:
+				return character
+			elif name in character.name.lower():
+				return character
 
 def main():
 	# start new game
-	game = Game()
+	if len(sys.argv) > 1:
+		config_path = sys.argv[1]
+	else:
+		config_path = "config.json"
+		
+	game = Game(config_path)
+	game.register_controller(GameCommandController)
 
     # map info
-	print("Map: " + game.settings["settings"]["name"])
-	print("Version: " + game.settings["settings"]["version"])
-	game.player.name = input("Your Name: ")
+	if game.settings.get("name"):
+		print("Map: " + game.settings.get("name"))
+	if game.settings.get("version"):
+		print("Version: " + str(game.settings.get("version")))
+	if game.settings.get("ask_name"):
+		game.player.name = input("Your Name: ")
 
 	# print brief help
 	print()
@@ -1007,13 +1194,14 @@ def main():
 	
 	# welcome message
 	print()
-	print(game.settings["settings"]["welcome"])
+	if game.settings.get("welcome"):
+		print(game.settings.get("welcome"))
 
 	# starting location
-	game.map.teleport_player()
-	print("You're in " + game.map.inspect_area(game.map.current_room.uid))
+	game.map.change_room()
+	print("You're in " + game.map.current_room.inspect())
 	print()
-	
+
 	# In-game loop
 	while game.is_running() and game.player.is_alive():
 		# run command
@@ -1022,8 +1210,8 @@ def main():
 		except KeyboardInterrupt:
 			print()
 			continue
-		
-		output = game.execute_line(command)
+
+		output = game.cmd_controller.execute_line(command)
 		if output:
 			print(output)
 
@@ -1049,4 +1237,3 @@ if __name__ == "__main__":
 			print()
 			break
 	print("Goodbye!")
-	sys.exit(0)

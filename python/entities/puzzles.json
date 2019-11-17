@@ -1,5 +1,5 @@
 {
-	"puzzles": [
+	"entities": [
 		{
 			"description": "The sun is shining...",
 			# Solutions are provided as a list of md5

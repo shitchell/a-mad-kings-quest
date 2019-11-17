@@ -1,0 +1,50 @@
+{
+    "entities": [
+        ## Doors
+        # eid, key, puzzle
+        {
+            "id": "dor001"
+        },
+        {
+            "id": "dor002"
+        },
+        {
+            "id": "dor003"
+        },
+        ## Rooms
+        # eid, name, description, doors, items, monster
+        {
+            "id": "rom001",
+            "name": "Main room",
+            "description": "A large room",
+            "doors": [
+                "dor001"
+            ],
+            "items": [
+                "fod001",
+                "arm001"
+            ],
+            "monsters": [
+            	"mon001",
+            	"mon002",
+            	"mon003"
+            ]
+        },
+        {
+            "id": "rom002",
+            "name": "Second Room",
+            "description": "A not so large room",
+            "doors": [
+                "dor001",
+                "dor002"
+            ],
+            "items": [
+                "fod002",
+                "arm002"
+            ],
+            "monsters": [
+            	"bos001"
+            ]
+        }
+    ]
+}
