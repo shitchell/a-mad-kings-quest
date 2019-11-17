@@ -42,7 +42,17 @@ def _md5(text):
 class CommandController:
 	def __init__(self, game):
 		self.game = game
-	
+		readline.parse_and_bind("tab: complete")
+		readline.set_completer(self._completer)
+
+	# Method for tab completion
+	def _completer(self, text, state):
+		options = [x for x in self.get_command_names() if x.startswith(text)]
+		if state < len(options):
+			return options[state]
+		else:
+			return None
+		
 	def execute_line(self, line):
 		line_parts = shlex.split(line)
 		if len(line_parts) > 0:
