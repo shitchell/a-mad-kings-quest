@@ -1,5 +1,5 @@
 {
-	"monsters": [
+	"entities": [
 		{
 			"id": "mon001",
 			"name": "Deranged Stable Boy",

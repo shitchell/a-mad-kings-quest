@@ -1,9 +1,0 @@
-{
-	"doors": [
-		{
-			"id": "dor001",
-			"key": None,
-			"puzzle": None
-		}
-	]
-}

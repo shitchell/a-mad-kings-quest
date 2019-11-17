@@ -1,24 +1,27 @@
 {
-    "settings": {
-        "welcome": "You wake up in a dark cave...",
-        "name": "Cave Map",
-        "version": "2.0"
-    },
-	"areas": [
+	"name": "A Mad King's Quest",
+	"entities": [
+		## Doors
 		{
-			"id": "A01",
-			# Name printed in direction listing
+			"id": "dor001"
+		},
+		{
+			"id": "dor002",
+			"key": "key001"
+		},
+		{
+			"id": "dor003",
+			"key": "key005",
+			"puzzle": "puz002"
+		},
+		## Rooms
+		{
+			"id": "rom001",
 			"name": "large cavern",
-			"type": "room",
-			# Description printed in room inspection
 			"description": "a large, empty cavern dimly lit by torches",
-			# Directions printed in room inspection
-			# Provide a dictionary (associative array) of
-			# direction/roomID key/value pairs
-			"directions": {
-				"north": "A02",
-				"west": "A06"
-			}
+			"doors": [
+			    "dor001"
+			]
 		},
 		{
 			"id": "A02",
