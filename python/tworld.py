@@ -297,29 +297,36 @@ class GameCommandController(CommandController):
 		self.game._is_running = False
 
 	## Admin commands
-	def mod_health(self, *args):
+	@CommandController.admin
+	def do_health(self, *args):
 		"""Set player health to value"""
 		if args:
 			self.game.player.health = int(args[0])
 		return self.do_me()
-	def mod_rooms(self, *args):
+
+	@CommandController.admin
+	def do_rooms(self, *args):
 		"""View list of all rooms"""
-		rooms = [room.uid + ": " + room.name for room in self.game.map.rooms]
+		rooms = [room.eid + ": " + room.name for room in self.game.map.get_rooms()]
 		return "\n".join(rooms)
-	def mod_room(self, *args):
+
+	@CommandController.admin
+	def do_room(self, *args):
 		"""Remotely inspect any room by ID"""
 		rooms = list()
 		for arg in args:
-			room = self.game.map.get_area_by_id(arg)
+			room = self.game.map.get_room(arg, arg)
 			if room:
 				description = "%s: %s\n%s" % (
-					room.uid,
+					room.eid,
 					room.name,
-					self.game.map.inspect_area(arg)
+					room.inspect()
 				)
 				rooms.append(description)
 		return "\n\n".join(rooms)
-	def mod_debug(self, *args):
+
+	@CommandController.admin
+	def do_debug(self, *args):
 		"""Sets or displays debug level. Higher level increases output"""
 		global DEBUG
 		if args:
@@ -328,21 +335,29 @@ class GameCommandController(CommandController):
 			except:
 				return "Invalid debug level '%s'" % args[0]
 		return "debug => " + str(DEBUG)
-	def mod_items(self, *args):
+
+	@CommandController.admin
+	def do_items(self, *args):
 		"""Return a list of items on the map and their locations"""
 		room_items = list()
-		for room in self.game.map.rooms:
-			for item in room.items:
-				room_items.append("[%s] %s: %s" % (room.uid, room.name, item.name))
+		for room in self.game.map.get_rooms():
+			for item in room.inventory.get_items():
+				room_items.append("[%s] %s: %s" % (room.eid, room.name, item.name))
+				for subitem in item.inventory.get_items():
+					room_items.append("[%s] %s: %s => %s" % (room.eid, room.name, item.name, subitem.name))
 		return "\n".join(room_items)
-	def mod_monsters(self, *args):
+
+	@CommandController.admin
+	def do_monsters(self, *args):
 		"""Return a list of monsters on the map and their locations"""
 		room_monsters = list()
-		for room in self.game.map.rooms:
-			if room.monster:
-				room_monsters.append("[%s] %s: %s" % (room.uid, room.name, room.monster.name))
+		for room in self.game.map.get_rooms():
+			for monster in room.get_monsters():
+				room_monsters.append("[%s] %s: %s" % (room.eid, room.name, monster.name))
 		return "\n".join(room_monsters)
-	def mod_eval(self, *args):
+
+	@CommandController.admin
+	def do_eval(self, *args):
 		"""Execute a python statement"""
 		if args:
 			line = " ".join(args)
@@ -367,12 +382,13 @@ class Entity:
 		return "%s: %s" % (self.name, self.description)
 
 class Item(Entity):
-	def __init__(self, uid=None, eid=None, name="", description=""):
+	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=1):
 		super().__init__(uid, eid, name, description)
 		# All items can potentially contain other items
 		self.inventory = Inventory()
 		self._equippable = False
 		self._usable = False
+		self.drop_chance = drop_chance
 
 	def can_equip(self):
 		return self._equippable
@@ -653,9 +669,7 @@ class Character(Entity):
 			self._health = int(value)
 		except:
 			return	
-		if self._health > 100:
-			self._health = 100
-		elif self._health < 0:
+		if self._health < 0:
 			self._health = 0
 		if self._health == 0:
 			_log("Character '%s' is dead" % self.name, level=2)
@@ -706,6 +720,14 @@ class Character(Entity):
 	def use(self, item):
 		if isinstance(item, Usable):
 			item.use(self)
+
+	## Get dropped items based on probability
+	def get_dropped_items(self):
+		items = list()
+		for item in self.inventory.get_items():
+			if random.random() >= item.drop_chance:
+				items.append(item)
+		return items
 
 	## Custom inspect command
 	def inspect(self):
@@ -835,6 +857,9 @@ class Room(Entity):
 				return monster
 		# Else, return a random normal monster or no monster
 		return random.choice(self._monsters + [None])
+
+	def get_monsters(self):
+		return self._monsters
 
 	def enter(self):
 		self.monster = self.get_monster()
@@ -971,7 +996,7 @@ class EntityFactory:
 		# Create the weapon if it exists
 		weapon = self.create_entity(entity_dict.get("weapon"))
 		# Create any items in the inventory
-		items = self.create_entities(entity_dict.get("inventory"))
+		items = self.create_entities(entity_dict.get("items"))
 		inventory = Inventory(items)
 		return Monster(
 			eid = entity_dict.get("id"),
@@ -1051,6 +1076,9 @@ class Map:
 				return room
 
 	def get_rooms(self, name=None, door=None):
+		if not name and not door:
+			return self._rooms
+
 		rooms = list()
 		if name:
 			name = str(name).lower()
