@@ -12,15 +12,15 @@
 
 ## Misc Coding
 
-- [ ] Map.teleport_player(Room room)
-- [ ] Map.get_room(Door door)
+- [x] Map.teleport_player(Room room)
+- [x] Map.get_rooms(Door door)
 - [ ] Puzzle.activate()
-- [ ] Puzzle Door.puzzle
-- [ ] Key Door.key
-- [ ] Room.has_door(string eid)
-- [ ] Room.get_door(string eid)
-- [ ] Room.inspect()
-- [ ] Inventory.contains(string eid)
+- [x] Puzzle Door.puzzle
+- [x] Key Door.key
+- [x] Room.has_door(string eid)
+- [x] Room.get_door(string eid)
+- [x] Room.inspect()
+- [x] Inventory.contains(string eid)
 
 # Config files
 
