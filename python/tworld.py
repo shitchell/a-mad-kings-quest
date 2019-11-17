@@ -437,6 +437,7 @@ class Entity:
 
 class Item(Entity):
 	def __init__(self, uid=None, eid=None, name="", description=""):
+		super().__init__(uid, eid, name, description)
 		# All items can potentially contain other items
 		self.inventory = Inventory()
 		self._equippable = False
@@ -787,6 +788,72 @@ class Player(Character): pass
 
 class Monster(Character): pass
 
+class Room(Entity):
+	def __init__(self, uid=None, eid=None, name="", description="", doors=list(), items=list(), puzzle=None, monster=None):
+		super().__init__(uid, eid, name, description)
+		# Add doors
+		self.doors = list()
+		try:
+			for door in doors:
+				self.add_door(door)
+		except:
+			pass
+
+		# Add items to room
+		self.inventory = Inventory()
+		try:
+			self.inventory.update(items)
+		except:
+			pass
+
+		# Add puzzle
+		self.puzzle = None
+
+		# Add monster
+		self.monster = None
+
+		# Default to not visited
+		self._visited = False
+	
+	def add_door(self, door):
+		if isinstance(door, Door):
+			self.doors.append(door)
+	
+	def get_directions(self):
+		return [x.lower() for x in self.directions]
+	def has_direction(self, direction):
+		return direction.lower() in self.get_directions()
+	def get_direction(self, direction):
+		# Return the given direction, else the current room if no such direction exists
+		return self.directions.get(direction.lower(), self)
+	def add_item(self, item):
+		self.items.append(item)
+	def get_item(self, name):
+		for item in self.items:
+			if item.name.lower() == name.lower():
+				return item
+	def pop_item(self, name=None):
+		item = None
+		if name:
+			item = self.get_item(name)
+		elif self.items:
+			item = self.items[0]
+		if item:
+			self.items.remove(item)
+			return item
+	def add_puzzle(self, puzzle):
+		self.puzzle = puzzle
+	def remove_puzzle(self):
+		self.puzzle = None
+	def get_puzzle(self):
+		return self.puzzle
+	def add_monster(self, monster):
+		self.monster = monster
+	def remove_monster(self):
+		self.monster = None
+	def get_monster(self):
+		return self.monster
+
 class EntityFactory:
 	def __init__(self, entities=list()):
 		self._entities = dict()
@@ -923,81 +990,6 @@ class Map:
 		if area.visited:
 			description += "\nYou've been here before."
 		return description
-
-class Room:
-	def __init__(self, config):
-		self.uid = config["id"]
-		self.name = config["name"]
-		self.type = config["type"]
-		self.description = config["description"]
-		self.directions = config["directions"]
-		self.visited = False
-		self.items = list()
-		self.puzzle = None
-		self.monster = None
-	def _sanitize_directions(self):
-		# Ensure that all directions are lowercase
-		for direction in self.directions:
-			if direction != direction.lower():
-				self.directions[direction.lower()] = self.directions[direction]
-				del self.directions[direction]
-	def add_direction(self, direction, destination):
-		self.directions[direction.lower()] = destination
-	def get_directions(self):
-		return [x.lower() for x in self.directions]
-	def has_direction(self, direction):
-		return direction.lower() in self.get_directions()
-	def get_direction(self, direction):
-		# Return the given direction, else the current room if no such direction exists
-		return self.directions.get(direction.lower(), self)
-	def add_item(self, item):
-		self.items.append(item)
-	def get_item(self, name):
-		for item in self.items:
-			if item.name.lower() == name.lower():
-				return item
-	def pop_item(self, name=None):
-		item = None
-		if name:
-			item = self.get_item(name)
-		elif self.items:
-			item = self.items[0]
-		if item:
-			self.items.remove(item)
-			return item
-	def add_puzzle(self, puzzle):
-		self.puzzle = puzzle
-	def remove_puzzle(self):
-		self.puzzle = None
-	def get_puzzle(self):
-		return self.puzzle
-	def add_monster(self, monster):
-		self.monster = monster
-	def remove_monster(self):
-		self.monster = None
-	def get_monster(self):
-		return self.monster
-
-class Puzzle:
-	def __init__(self, config):
-		self.description = config["description"]
-		self.solutions = config["solutions"]
-		self.hint = config.get("hint")
-		self.attempts = config.get("attempts")
-		self.drops = config.get("drops")
-		_log("creating puzzle '%s'" % self.description, level=2)
-	def solve(self, solution):
-		# lowercase solution
-		solution = solution.lower()
-		# remove punctuation
-		solution = solution.translate(str.maketrans(dict.fromkeys(string.punctuation)))
-		md5 = _md5(solution)
-		if md5 in self.solutions:
-			return True
-		else:
-			if self.attempts != None:
-				self.attempts -= 1
-			return False
 
 def main():
 	# start new game
