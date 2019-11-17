@@ -9,6 +9,12 @@
   - [ ] GameCommandController *in-game commands*
   - [ ] AttackCommandController *in-fight commands*
 - [ ] Documentation
+  - [ ] comments
+  - [ ] command usage
+- [ ] Commands
+  - [ ] ensure all output matches SRS
+  - [ ] monster: flee
+  - [x] monster: inspect
 
 ## Misc Coding
 

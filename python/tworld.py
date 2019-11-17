@@ -137,132 +137,30 @@ class GameCommandController(CommandController):
 		"""Describe the current location"""
 		return "You're in " + self.game.map.current_room.inspect()
 
-	def do_pickup(self, *args):
-		"""Pickup an item in the current room"""
+	def do_inspect(self, *args):
+		"""Inspect a monster in the current room"""
 		if args:
 			name = " ".join(args)
-		else:
-			name = None
-		item = self.game.map.current_room.pop_item(name)
-		if item:
-			self.game.player.add_item(item)
-			return "Added '%s' to inventory" % item.name
-		elif name == None:
-			return "No items in room!"
-		elif item == None:
-			return "No '%s' in room!" % name
-	def do_drop(self, *args):
-		"""Remove an item from the player inventory and place into the current room"""
-		if args:
-			name = " ".join(args)
-		else:
-			name = None
-		item = self.game.player.pop_item(name)
-		if item:
-			self.game.map.current_room.add_item(item)
-			return "Dropped '%s' into %s" % (item.name, self.game.map.current_room.name)
-		elif name == None:
-			return "No items in inventory!"
-		else:
-			return "No '%s' in inventory!" % name
+			# Collect all inspectable items
+			items = dict()
+			# Monster
+			monster = self.game.map.current_room.monster
+			if monster:
+				items[monster.name] = monster
+			_log("Inspectable items:", items, level=4)
+			# Determine if name in items
+			for key in items:
+				if name.lower() in key.lower():
+					return items[key].inspect()
+			return "Could not find '%s'" % name
+		return self.do_me()
+
 	def do_inventory(self, *args):
 		"""View items in player inventory"""
 		if self.game.player.inventory:
 			return ", ".join([item.name for item in self.game.player.inventory])
 		else:
 			return "No items in inventory!"
-	def do_inspect(self, *args):
-		"""Inspect a specific item in the player's inventory or the last picked up item"""
-		if args:
-			name = " ".join(args)
-		else:
-			name = None
-		item = self.game.player.get_item(name)
-		if item:
-			return item.inspect()
-		elif name:
-			return "No '%s' in inventory!" % name
-		else:
-			return "No items in inventory!"
-	def do_use(self, *args):
-		"""Use a specific item in the player's inventory or the last picked up item"""
-		if args:
-			name = " ".join(args)
-		else:
-			name = None
-		item = self.game.player.get_item(name)
-		if item and item.can_use():
-			output = ""
-			if item.is_strength():
-				output += "Added %i strength\n" % item.strength
-				self.game.player.attack += item.strength
-			if item.is_health():
-				output += "Added %i health\n" % item.health
-				self.game.player.health += item.health
-			self.game.player.pop_item(item.name)
-			return output + self.do_me()
-		elif name:
-			return "No '%s' in inventory!" % name
-		else:
-			return "No items in inventory!"
-	def do_equip(self, *args):
-		"""Equip a specific item in the player's inventory or the last picked up item"""
-		if args:
-			name = " ".join(args)
-		else:
-			name = None
-		item = self.game.player.get_item(name)
-		if item and item.can_equip():
-			output = ""
-			self.game.player.equip_item(item.name)
-			if item.is_weapon():
-				output += "Attack increased by %i\n" % item.attack
-			if item.is_armor():
-				output += "Armor increased by %i\n" % item.armor
-			return output + self.do_me()
-	def do_unequip(self, *args):
-		"""Unequip the equipped item"""
-		if self.game.player.equipped:
-			self.game.player.unequip_item()
-			return self.do_me()
-		else:
-			return "No item equipped!"
-	def do_hint(self, *args):
-		"""Get a hint for a puzzle in the current room"""
-		puzzle = self.game.map.current_room.puzzle
-		if puzzle:
-			return puzzle.hint
-		else:
-			return "No puzzle found!"
-	def do_solve(self, *args):
-		"""Try to solve the puzzle in the current room"""
-		if args:
-			solution = " ".join(args)
-		else:
-			solution = None
-		puzzle = self.game.map.current_room.puzzle
-		if puzzle:
-			if solution == None:
-				return "That's not a terribly good guess..."
-			if puzzle.solve(solution):
-				self.game.map.current_room.remove_puzzle()
-				msg = "Good job!"
-				if puzzle.drops:
-					item = self.game.create_item(puzzle.drops)
-					if item:
-						msg += " Something fell to the floor..."
-						self.game.map.current_room.add_item(item)
-				return msg
-			else:
-				msg = "Incorrect! "
-				if puzzle.attempts:
-					msg += "%i attempts remaining" % puzzle.attempts
-				else:
-					msg += "Puzzle removed :("
-					self.game.map.current_room.remove_puzzle()
-				return msg
-		else:
-			return "No puzzle in room!"
 
 	def do_attack(self, *args):
 		"""Try to attack the monster in the current room"""
@@ -298,16 +196,20 @@ class GameCommandController(CommandController):
 	### Kick me, kick me, don't you black or white me
 		"""Provide player info"""
 		return self.game.player.inspect()
-	def do_quit(self, *args):
-		"""Exit the game"""
-		self.game._is_running = False
 
 	## Admin commands
 	@CommandController.admin
-	def do_health(self, *args):
+	def do_set_health(self, *args):
 		"""Set player health to value"""
 		if args:
 			self.game.player.health = int(args[0])
+		return self.do_me()
+
+	@CommandController.admin
+	def do_set_attack(self, *args):
+		"""Set player attack to value"""
+		if args:
+			self.game.player._base_attack = int(args[0])
 		return self.do_me()
 
 	@CommandController.admin
@@ -405,6 +307,9 @@ class Item(Entity):
 	def can_equip(self):
 		return self._equippable
 
+	def is_equipped(self, player):
+		return self in player.equipped
+
 	def can_use(self):
 		return self._usable
 
@@ -427,9 +332,6 @@ class Equippable(Item):
 	def unequip(self, player):
 		if self in player.equipped:
 			player.equipped.remove(self)
-
-	def is_equipped(self, player):
-		return self in player.equipped
 
 class Usable(Item):
 	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None):
