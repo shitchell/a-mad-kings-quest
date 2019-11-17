@@ -728,6 +728,9 @@ class Character(Entity):
 			_log("invalid damage '%s'" % value)
 		return self.health
 
+    def is_alive(self):
+        return self.health > 0
+    
 	## Armor
 	def has_armor(self):
 		return bool(self.get_armor())
@@ -762,10 +765,8 @@ class Character(Entity):
 	def use(self, item):
 		if isinstance(item, Usable):
 			item.use(self)
-	
-	def is_alive(self):
-		return self.health > 0
-	
+
+	## Custom inspect command
 	def inspect(self):
 		description = "%s | %i 🗡️ | %i ❤" % (
 			self.name,
