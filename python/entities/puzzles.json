@@ -12,13 +12,67 @@
 		},
 		{
 			"id": "puz002",
-			"description": "",
+			"description": "Take off my skin and I won’t cry, but you will. What am I?",
 			"solutions": [
-				""
+				"Headquarters"
 			],
 			"hints": [
-				""
+				"Think “quarters”."
 			]
 		},
+		{
+			"id": "puz003",
+			"description": "Where does someone who can’t stop thinking about money go?",
+			"solutions": [
+				"Onion"
+			],
+			"hints": [
+				"These are often used when cooking."
+			]
+		},
+		{
+			"id": "puz004",
+			"description": "I’m something you do when designing a castle, a boat, or a shoe. What am I?",
+			"solutions": [
+				"Draw"
+			],
+			"hints": [
+				"Designing” as in what an architect would do."
+			]
+		},
+		{
+			"id": "puz005",
+			"description": "Always wax, yet always wane: I melt, succumbed to the flame. Lighting darkness, with fate unblest, I soon devolve to shapeless mess. What am I?",
+			"solutions": [
+				"Candle"
+			],
+			"hints": [
+				"Popular during blackouts."
+			]
+		},
+		{
+			"id": "puz006",
+			"description": "The alphabet goes from A to Z. What goes from Z to A?",
+			"solutions": [
+				"Zebra"
+			],
+			"hints": [
+				"Native to Africa."
+			]
+		},
+		{
+			"id": "puz007",
+			"description": "What do you call people who are afraid of Santa Claus?",
+			"solutions": [
+				"Claustrophobic"
+			],
+			"hints": [
+				"When you have an irrational fear, we call it a phobia."
+			]
+		},
+		
+		
+		
+	
 	]
 }
