@@ -33,12 +33,16 @@ class Game:
 	def __init__(self, settings_filepath="Rooms.txt"):
 		self.settings_filepath = settings_filepath
 		self.settings = self.read_settings(settings_filepath)
+		self._entities = dict()
 		self._is_running = True
 		self.cmd_controller = CommandController(self)
 		self.player = Player()
 		self.characters = list()
 		self.characters.append(self.player)
 		self.build_map()
+	def create_entity(self, entity_id):
+		if entity_id in self._entities:
+			return 
 	def read_settings(self, filepath=None):
 		if not filepath:
 			filepath = self.settings_filepath
@@ -421,45 +425,286 @@ class CommandController:
 				output = "Exception: " + str(e)
 			return output
 
-class Character:
+class Entity:
+	def __init__(self, uid=None, eid=None, name="", description=""):
+		self.uid = uid or uuid.uuid4().hex
+		self.eid = eid
+		self.name = name
+		self.description = description
+
+	def inspect(self):
+		return "%s: %s" % (self.name, self.description)
+
+class Item(Entity):
+	def __init__(self, uid=None, eid=None, name="", description=""):
+		# All items can potentially contain other items
+		self.inventory = Inventory()
+		self._equippable = False
+		self._usable = False
+
+	def can_equip(self):
+		return self._equippable
+
+	def can_use(self):
+		return self._usable
+
+class Key(Item):
+	pass
+
+class Equippable(Item):
+	def __init__(self, uid=None, eid=None, name="", description=""):
+		# All items can potentially contain other items
+		super().__init__(uid, eid, name, description)
+		self._equippable = True
+
+	def equip(self, player):
+		# You can only have one of each combatitem type equipped,
+		# so unequip any equipped items that share this class
+		for item in player.equipped:
+			if isinstance(item, self.__class__):
+				item.unequip(player)
+		player.equipped.append(self)
+
+	def unequip(self, player):
+		if self in player.equipped:
+			player.equipped.remove(self)
+
+	def is_equipped(self, player):
+		return self in player.equipped
+
+class Usable(Item):
+	def __init__(self, uid=None, eid=None, name="", description=""):
+		# All items can potentially contain other items
+		super().__init__(uid, eid, name, description)
+		self._usable = True
+
+	def _on_use(self, player, inventory):
+		pass
+	
+	# After using the item, it must be deleted from the inventory
+	# By allowing the option to pass in an inventory, we allow the
+	# option for a player to use their item on another player.
+	# If no inventory is provided, the inventory in which the
+	# item exists is assumed to be the player's own inventory
+	def use(self, player, inventory=None):
+		if not inventory:
+			inventory = player.inventory
+		
+		# Ensure the item exists in the inventory
+		if self in inventory:
+			# Call the _on_use method. Inheriting classes
+			# should overwrite _on_use() rather than use()
+			self._on_use(player, inventory)
+			# Remove the food item from the inventory
+			inventory.remove(self)
+
+class CombatItem(Equippable):
+	def __init__(self, uid=None, eid=None, name="", description="", damage=0):
+		super().__init__(uid, eid, name, description)
+		self._damage = damage
+		self._equipable = True
+
+	@property
+	def damage(self):
+		return self._damage
+
+	# Ensure that damage is always an integer
+	@damage.setter
+	def damage(self, value):
+		try:
+			self._damage = int(value)
+		except:
+			# If damage isn't already defined, set it to 0, else leave it unchanged
+			if not hasattr(self, "_damage"):
+				self._damage = 0
+
+class Weapon(CombatItem): pass
+
+class Armor(CombatItem): pass
+
+class Food(Usable):
+	def __init__(self, uid=None, eid=None, name="", description="", health=0):
+		super().__init__(uid, eid, name, description)
+		self._health = health
+
+	@property
+	def health(self):
+		return self._health
+
+	@health.setter
+	def health(self, value):
+		try:
+			self._health = int(value)
+		except:
+			# If health isn't already defined, set it to 0, else leave it unchanged
+			if not hasattr(self, "_health"):
+				self._health = 0
+
+	def _on_use(self, player, inventory=None):
+		player.health += self.health
+
+class Puzzle(Item):
+	def __init__(self, uid=None, eid=None, name="", description="", solutions=list(), hints=list(), attempts=None):
+		super().__init__(uid, eid, name, description)
+		self._solutions = list()
+		self._hints = list()
+		self._hint_index = 0
+		try:
+			self._attempts = int(attempts)
+		except:
+			self._attempts = None
+		self._usable = True
+
+	def _sanitize_solution(self, solution):
+		# Lowercase
+		solution = solution.lower()
+		# Remove punctuation
+		solution = solution.translate(str.maketrans('', '', string.punctuation))
+		# Remove trailing / leading whitespace
+		solution = solution.strip()
+		return solution
+
+	def add_solution(self, solution):
+		solution = str(solution)
+		self._solutions.append(solution)
+
+	def add_hint(self, hint):
+		hint = str(hint)
+		if hint not in self._hints:
+			self._hints.append(hint
+
+	# Rotate through all available hints and return
+	# the next available hint with each call
+	def get_hint(self):
+		hints_len = len(self._hints)
+		if hints_len > 0:
+			hint_index = self._hint_index % hints_len
+			self._hint_index += 1
+			return self._hints[hint_index]
+
+	def solve(self, guess):
+		# Sanitize the guess
+		guess = self._sanitize_solution(guess)
+		for solution in self._solutions:
+			solution = self._sanitize_solution(solution)
+			if solution == guess:
+				return True
+		# Incorrect guess
+		try:
+			self._attempts -= 1
+			if self._attempts < 0:
+				self._attempts = 0
+		except:
+			pass
+		return False
+
+class Inventory:
+	def __init__(self, items=list()):
+		self._items = list()
+		# Ensure that only Entity objects are added
+		try:
+			for item in items:
+				self.add(item)
+		except:
+			pass
+
+	# Retrieve an item by entity id, unique id, or name
+	# If name is given, match the closest named item
+	def get(self, eid=None, uid=None, name=None):
+		if name:
+			name = str(name).lower()
+		
+		for item in self._items:
+			if uid and uid == item.uid:
+				return item
+			elif eid and eid == item.eid:
+				return item
+			elif name and name in item.name.lower():
+				return item
+
+	# Retrieve an item that matches the object
+	# and remove it from the inventory list
+	def pop(self, eid=None, uid=None, name=None):
+		item = self.get(eid, uid, name)
+		if item:
+			self._items.remove(item)
+			return item
+
+	def contains(self, eid=None, uid=None, name=None):
+		return bool(self.get(eid, uid, name))
+
+	# Add an item to the inventory list
+	def add(self, item):
+		if isinstance(item, Entity):
+			self._items.append(item)
+
+	# Add a list of items
+	def update(self, items):
+		try:
+			for item in items:
+				self.add(item)
+		except:
+			pass
+	
+	def get_items(self):
+		return self._items
+
+	def size(self):
+		return len(self._items)
+
+class Character(Entity):
 	def __init__(self,
-		uid=None,
-		name=None,
-		health=100,
-		description="",
-		attack=10,
-		resistance=0,
-		armor=0,
-		weapon=None,
-		inventory=list()
+		uid = None,
+		eid = None,
+		name = "",
+		description = "",
+		health = 100,
+		attack = 10,
+		resistance = 0,
+		armor = None,
+		weapon = None,
+		inventory = list()
 	):
-		self.uid = uid
+		# Set a default name if none is provided
 		if not name:
 			name = "Character%i" % random.randrange(1111,9999)
-		self.name = name
-		self.inventory = inventory
-		self.equipped = {"weapon": weapon, "armor": armor}
+
+		super().__init__(uid, eid, name, description)
+
+		# Stats
 		self.health = health
-		self.description = description
 		self._attack = attack
 		self._resistance = resistance
+		
+		# Create an inventory and add any provided items
+		self.inventory = Inventory()
+		self.inventory.update(inventory)
+
+		# Equipable items
+		self.equipped = list()
+		self.equip(armor)
+		self.equip(weapon)
+
 	@property
 	def attack(self, character=None):
 		damage = self._attack
-		if self.equipped.get("weapon"):
-			damage += self.equipped.get("weapon").attack
+		if self.has_weapon():
+			damage += self.get_weapon().damage
 		if character:
 			character.damage(damage)
 		return damage
+	
 	@attack.setter
 	def attack(self, value):
 		try:
 			self._attack = int(value)
 		except:
 			pass
+	
 	@property
 	def health(self):
 		return self._health
+	
 	@health.setter
 	def health(self, value):
 		try:
@@ -474,45 +719,52 @@ class Character:
 			_log("Character '%s' is dead" % self.name, level=2)
 		else:
 			_log("Set '%s' health to '%i'" % (self.name, self.health), level=2)
+	
 	def damage(self, value):
 		try:
 			self.health -= value
 		except:
 			_log("invalid damage '%s'" % value)
 		return self.health
-	def add_item(self, item):
-		self.inventory.append(item)
-		_log("Added '%s' to '%s' inventory" % (item.name, self.name), level=2)
-	def get_item(self, name=None):
-		if name:
-			for item in self.inventory:
-				if item.name.lower() == name.lower():
-					return item
-		elif name == None and len(self.inventory) > 0:
-			return self.inventory[-1]
-	def pop_item(self, name=None):
-		item = self.get_item(name)
-		if item:
-			self.inventory.remove(item)
-			if item == self.equipped:
-				self.equipped = None
-			_log("Removed '%s' from '%s' inventory" % (item.name, self.name), level=2)
-			return item
-	def get_items(self):
-		return self.inventory
-	def equip_item(self, name):
-		item = self.get_item(name)
-		if item and item.can_equip():
-			# Remove any previously equipped items
-			self.unequip_item()
-			self.equipped = item
-	def unequip_item(self):
-		self.equipped = None
+
+	## Armor
+	def has_armor(self):
+		return bool(self.get_armor())
+
+	def get_armor(self):
+		for item in self.equipped:
+			if isinstance(item, Armor):
+				return item
+
+	## Weapon
+	def has_weapon(self):
+		return bool(self.get_weapon())
+
+	def get_weapon(self):
+		for item in self.equipped:
+			if isinstance(item, Weapon):
+				return item
+
+	## Equip items
+	def equip(self, item):
+		if isinstance(item, Equippable)
+			item.equip(self)
+			# Ensure item is in inventory
+			if item not in self.inventory.get_items():
+				self.inventory.add(item)
+
+	def unequip(self, item):
+		if isinstance(item, Equippable):
+			item.unequip(self)
+
+	## Use items
+	def use(self, item):
+		if isinstance(item, Usable):
+			item.use(self)
+	
 	def is_alive(self):
 		return self.health > 0
-	def adjust_health(self, value):
-		"""Change health by value"""
-		self.set_health(self.health + value)
+	
 	def inspect(self):
 		description = "%s | %i 🗡️ | %i ❤" % (
 			self.name,
@@ -521,29 +773,94 @@ class Character:
 		)
 		if self.description:
 			description += "\n" + self.description
-		if self.get_items():
-			for item in self.get_items():
+		if self.inventory.size() > 0:
+			for item in self.inventory.get_items():
 				description += "\n- " + item.name
-				if item == self.equipped:
+				if item.is_equipped(self):
 					description += " [equipped]"
 		return description
+	
 	def __repr__(self):
 		return self.name
 
 class Player(Character): pass
-class Monster(Character):
-	def __init__(self, config):
-		super().__init__(
-			uid = config.get("id"),
-			name = config.get("name"),
-			health = config.get("health"),
-			description = config.get("description"),
-			attack = config.get("attack"),
-			resistance = config.get("armor")
-#			config.get("armor"),
-#			config.get("weapon"),
-#			config.get("inventory")
+
+class Monster(Character): pass
+
+class EntityFactory:
+	def __init__(self, entities=list()):
+		self._entities = dict()
+		if isinstance(entities, list):
+			for entity in entities:
+				self.add_entity(entity)
+
+	# Add an entity definition / dict
+	def add_definition(self, entity_dict):
+		# Entity must be a dict...
+		if isinstance(entity_dict, dict):
+			# ...and have at least an id and name
+			if entity_dict.get("id") and entity_dict.get("name"):
+				self._entities[entity_dict.get("id")] = entity_dict
+
+	# Return an entity object based on an entity id
+	def create_entity(self, eid):
+		entity_dict = self._entities.get(eid)
+		if entity_dict:
+			generator = self._get_entity_generator(eid)
+			if generator:
+				return generator(entity_dict)
+
+	def _get_entity_generator(self, eid):
+		entity_type = str(eid)[:3]
+		generator_name = "_create_" + entity_type
+		if hasattr(self, generator_name):
+			generator = getattr(self, generator_name)
+			return generator
+
+	# Create an armor object
+	def _create_arm(self, entity_dict):
+		return Armor(
+			eid = entity_dict.get("id"),
+			name = entity_dict.get("name"),
+			description = entity_dict.get("description",
+			damage = entity_dict.get("equip", dict()).get("armor")
 		)
+
+	# Create a boss monster object
+	def _create_bos(self, entity_dict):
+		## TODO: Create boss entity
+		pass
+
+	# Create a chest object
+	def _create_cst(self, entity_dict):
+		chest = Item(
+			eid = entity_dict.get("id"),
+			name = entity_dict.get("name"),
+			description = entity_dict.get("description"),
+		)
+		# Add any contained items
+		if "items" in entity_dict:
+			for eid in entity_dict.get("items"):
+				item = self.create_entity(eid)
+				chest.inventory.add(item)
+		return chest
+
+	# Create a door object
+	def _create_dor(self, entity):
+		## TODO: Create a door entity
+		pass
+	
+	# Create a food object
+	def _create_fod(self, entity):
+		pass
+
+	# Create a monster object
+	def _create_mon(self, entity):
+		pass
+
+	# Create a weapon object
+	def _create_wep(self, entity):
+		pass
 
 class Map:
 	def __init__(self, config):
@@ -660,91 +977,6 @@ class Room:
 		self.monster = None
 	def get_monster(self):
 		return self.monster
-
-class Item:
-	def __init__(self, config):
-		self.name = config["name"]
-		self.description = config["description"]
-		self._can_equip = False
-		self._can_use = False
-		self.attack = config.get("equip", dict()).get("attack")
-		self.armor = config.get("equip", dict()).get("armor")
-		self.health = config.get("use", dict()).get("health")
-		self.strength = config.get("use", dict()).get("strength")
-		_log("creating item '%s'" % self.name, level=2)
-	@property
-	def health(self):
-		return self._health
-	@health.setter
-	def health(self, value):
-		try:
-			self._health = int(value)
-		except:
-			self._health = 0
-		if self._health != 0:
-			self._can_use = True
-	def is_health(self):
-		return self._health != 0
-	@property
-	def strength(self):
-		return self._strength
-	@strength.setter
-	def strength(self, value):
-		try:
-			self._strength = int(value)
-		except:
-			self._strength = 0
-		if self._strength != 0:
-			self._can_use = True
-	def is_strength(self):
-		return self._strength != 0
-	@property
-	def attack(self):
-		return self._attack
-	@attack.setter
-	def attack(self, value):
-		try:
-			self._attack = int(value)
-		except:
-			self._attack = 0
-		if self._attack < 0:
-			self._attack = 0
-		elif self._attack > 0:
-			self._can_equip = True
-	def is_weapon(self):
-		return self.attack != 0
-	@property
-	def armor(self):
-		return self._armor
-	@armor.setter
-	def armor(self, value):
-		try:
-			self._armor = int(value)
-		except:
-			self._armor = 0
-		if self._armor < 0:
-			self._armor = 0
-		elif self._armor > 0:
-			self._can_equip = True
-	def is_armor(self):
-		return self._armor != 0
-	def can_equip(self):
-		return self._can_equip
-	def can_use(self):
-		return self._can_use
-	def inspect(self):
-		description = "%s: %s" % (self.name, self.description)
-		if self.can_use() or self.can_equip():
-			description += "\nIt looks like you can "
-		if self.can_use():
-			description += "use "
-		if self.can_use() and self.can_equip():
-			description += "or "
-		if self.can_equip():
-			description += "equip "
-		if self.can_use() or self.can_equip():
-			description += "this item!"
-		return description
 
 class Puzzle:
 	def __init__(self, config):
