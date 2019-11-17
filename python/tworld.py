@@ -137,189 +137,111 @@ class GameCommandController(CommandController):
 		"""Describe the current location"""
 		return "You're in " + self.game.map.current_room.inspect()
 
-	def do_pickup(self, *args):
-		"""Pickup an item in the current room"""
+	def do_inspect(self, *args):
+		"""Inspect a monster in the current room"""
 		if args:
 			name = " ".join(args)
-		else:
-			name = None
-		item = self.game.map.current_room.pop_item(name)
-		if item:
-			self.game.player.add_item(item)
-			return "Added '%s' to inventory" % item.name
-		elif name == None:
-			return "No items in room!"
-		elif item == None:
-			return "No '%s' in room!" % name
-	def do_drop(self, *args):
-		"""Remove an item from the player inventory and place into the current room"""
-		if args:
-			name = " ".join(args)
-		else:
-			name = None
-		item = self.game.player.pop_item(name)
-		if item:
-			self.game.map.current_room.add_item(item)
-			return "Dropped '%s' into %s" % (item.name, self.game.map.current_room.name)
-		elif name == None:
-			return "No items in inventory!"
-		else:
-			return "No '%s' in inventory!" % name
+			# Collect all inspectable items
+			items = dict()
+			# Monster
+			monster = self.game.map.current_room.monster
+			if monster:
+				items[monster.name] = monster
+			_log("Inspectable items:", items, level=4)
+			# Determine if name in items
+			for key in items:
+				if name.lower() in key.lower():
+					return items[key].inspect()
+			return "Could not find '%s'" % name
+		return self.do_me()
+
 	def do_inventory(self, *args):
 		"""View items in player inventory"""
 		if self.game.player.inventory:
 			return ", ".join([item.name for item in self.game.player.inventory])
 		else:
 			return "No items in inventory!"
-	def do_inspect(self, *args):
-		"""Inspect a specific item in the player's inventory or the last picked up item"""
-		if args:
-			name = " ".join(args)
-		else:
-			name = None
-		item = self.game.player.get_item(name)
-		if item:
-			return item.inspect()
-		elif name:
-			return "No '%s' in inventory!" % name
-		else:
-			return "No items in inventory!"
-	def do_use(self, *args):
-		"""Use a specific item in the player's inventory or the last picked up item"""
-		if args:
-			name = " ".join(args)
-		else:
-			name = None
-		item = self.game.player.get_item(name)
-		if item and item.can_use():
-			output = ""
-			if item.is_strength():
-				output += "Added %i strength\n" % item.strength
-				self.game.player.attack += item.strength
-			if item.is_health():
-				output += "Added %i health\n" % item.health
-				self.game.player.health += item.health
-			self.game.player.pop_item(item.name)
-			return output + self.do_me()
-		elif name:
-			return "No '%s' in inventory!" % name
-		else:
-			return "No items in inventory!"
-	def do_equip(self, *args):
-		"""Equip a specific item in the player's inventory or the last picked up item"""
-		if args:
-			name = " ".join(args)
-		else:
-			name = None
-		item = self.game.player.get_item(name)
-		if item and item.can_equip():
-			output = ""
-			self.game.player.equip_item(item.name)
-			if item.is_weapon():
-				output += "Attack increased by %i\n" % item.attack
-			if item.is_armor():
-				output += "Armor increased by %i\n" % item.armor
-			return output + self.do_me()
-	def do_unequip(self, *args):
-		"""Unequip the equipped item"""
-		if self.game.player.equipped:
-			self.game.player.unequip_item()
-			return self.do_me()
-		else:
-			return "No item equipped!"
-	def do_hint(self, *args):
-		"""Get a hint for a puzzle in the current room"""
-		puzzle = self.game.map.current_room.puzzle
-		if puzzle:
-			return puzzle.hint
-		else:
-			return "No puzzle found!"
-	def do_solve(self, *args):
-		"""Try to solve the puzzle in the current room"""
-		if args:
-			solution = " ".join(args)
-		else:
-			solution = None
-		puzzle = self.game.map.current_room.puzzle
-		if puzzle:
-			if solution == None:
-				return "That's not a terribly good guess..."
-			if puzzle.solve(solution):
-				self.game.map.current_room.remove_puzzle()
-				msg = "Good job!"
-				if puzzle.drops:
-					item = self.game.create_item(puzzle.drops)
-					if item:
-						msg += " Something fell to the floor..."
-						self.game.map.current_room.add_item(item)
-				return msg
-			else:
-				msg = "Incorrect! "
-				if puzzle.attempts:
-					msg += "%i attempts remaining" % puzzle.attempts
-				else:
-					msg += "Puzzle removed :("
-					self.game.map.current_room.remove_puzzle()
-				return msg
-		else:
-			return "No puzzle in room!"
+
 	def do_attack(self, *args):
 		"""Try to attack the monster in the current room"""
 		monster = self.game.map.current_room.monster
-		player = self.game.map.player
+		player = self.game.player
 		if monster:
-			monster.damage(self.game.player.attack)
-			output = "%s dealt %i damage!\n" % (player.name, player.attack)
-			if monster.health <= 0:
+			damage = player.attack(monster)
+			output = "%s dealt %i damage!\n" % (player.name, damage)
+			if not monster.is_alive():
 				# Monster is dead
-				self.game.map.current_room.remove_monster()
-				output += "he ded\n"
+				self.game.map.current_room.remove_monster(monster.eid)
+				output += "You defeated the monster!\n"
+				# Get dropped items
+				items = monster.get_dropped_items()
+				if items:
+					self.game.map.current_room.inventory.update(items)
+					output += "Something fell to the floor..."
 			else:
 				# Monster is alive and well
 				# Attack player
-				player.damage(monster.attack)
+				damage = monster.attack(player)
 				# Add monster attack value
-				output +="%s dealt %i damage!\n" % (monster.name, monster.attack)
-				if player.health <= 0:
+				output += "%s dealt %i damage!\n" % (monster.name, damage)
+				if not player.is_alive():
 					# Player is dead
 					raise PlayerIsDead()
 				output += "Player [%i]\tMonster [%i]" % (player.health, monster.health)
 		else:
 			output = "No monster in room!"
 		return output
+
+	def do_flee(self, *args):
+		"""Make haste to the last room."""
+		if self.game.map.change_room(history=1):
+			return self.game.map.current_room.inspect()
+		return "Nowhere to run!"
+
 	### Sue me, sue me, everybody
 	def do_me(self, *args):
 	### Kick me, kick me, don't you black or white me
 		"""Provide player info"""
 		return self.game.player.inspect()
-	def do_quit(self, *args):
-		"""Exit the game"""
-		self.game._is_running = False
 
 	## Admin commands
-	def mod_health(self, *args):
+	@CommandController.admin
+	def do_set_health(self, *args):
 		"""Set player health to value"""
 		if args:
 			self.game.player.health = int(args[0])
 		return self.do_me()
-	def mod_rooms(self, *args):
+
+	@CommandController.admin
+	def do_set_attack(self, *args):
+		"""Set player attack to value"""
+		if args:
+			self.game.player._base_attack = int(args[0])
+		return self.do_me()
+
+	@CommandController.admin
+	def do_rooms(self, *args):
 		"""View list of all rooms"""
-		rooms = [room.uid + ": " + room.name for room in self.game.map.rooms]
+		rooms = [room.eid + ": " + room.name for room in self.game.map.get_rooms()]
 		return "\n".join(rooms)
-	def mod_room(self, *args):
+
+	@CommandController.admin
+	def do_room(self, *args):
 		"""Remotely inspect any room by ID"""
 		rooms = list()
 		for arg in args:
-			room = self.game.map.get_area_by_id(arg)
+			room = self.game.map.get_room(arg, arg)
 			if room:
 				description = "%s: %s\n%s" % (
-					room.uid,
+					room.eid,
 					room.name,
-					self.game.map.inspect_area(arg)
+					room.inspect()
 				)
 				rooms.append(description)
 		return "\n\n".join(rooms)
-	def mod_debug(self, *args):
+
+	@CommandController.admin
+	def do_debug(self, *args):
 		"""Sets or displays debug level. Higher level increases output"""
 		global DEBUG
 		if args:
@@ -328,21 +250,29 @@ class GameCommandController(CommandController):
 			except:
 				return "Invalid debug level '%s'" % args[0]
 		return "debug => " + str(DEBUG)
-	def mod_items(self, *args):
+
+	@CommandController.admin
+	def do_items(self, *args):
 		"""Return a list of items on the map and their locations"""
 		room_items = list()
-		for room in self.game.map.rooms:
-			for item in room.items:
-				room_items.append("[%s] %s: %s" % (room.uid, room.name, item.name))
+		for room in self.game.map.get_rooms():
+			for item in room.inventory.get_items():
+				room_items.append("[%s] %s: %s" % (room.eid, room.name, item.name))
+				for subitem in item.inventory.get_items():
+					room_items.append("[%s] %s: %s => %s" % (room.eid, room.name, item.name, subitem.name))
 		return "\n".join(room_items)
-	def mod_monsters(self, *args):
+
+	@CommandController.admin
+	def do_monsters(self, *args):
 		"""Return a list of monsters on the map and their locations"""
 		room_monsters = list()
-		for room in self.game.map.rooms:
-			if room.monster:
-				room_monsters.append("[%s] %s: %s" % (room.uid, room.name, room.monster.name))
+		for room in self.game.map.get_rooms():
+			for monster in room.get_monsters():
+				room_monsters.append("[%s] %s: %s" % (room.eid, room.name, monster.name))
 		return "\n".join(room_monsters)
-	def mod_eval(self, *args):
+
+	@CommandController.admin
+	def do_eval(self, *args):
 		"""Execute a python statement"""
 		if args:
 			line = " ".join(args)
@@ -366,16 +296,26 @@ class Entity:
 	def inspect(self):
 		return "%s: %s" % (self.name, self.description)
 
+	def __repr__(self):
+		return "<%s [%s]>" % (self.__class__.__qualname__, self.eid)
+
 class Item(Entity):
-	def __init__(self, uid=None, eid=None, name="", description=""):
+	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None):
 		super().__init__(uid, eid, name, description)
 		# All items can potentially contain other items
 		self.inventory = Inventory()
 		self._equippable = False
 		self._usable = False
+		try:
+			self.drop_chance = float(drop_chance)
+		except:
+			self.drop_chance = 1
 
 	def can_equip(self):
 		return self._equippable
+
+	def is_equipped(self, player):
+		return self in player.equipped
 
 	def can_use(self):
 		return self._usable
@@ -383,9 +323,9 @@ class Item(Entity):
 class Key(Item): pass
 
 class Equippable(Item):
-	def __init__(self, uid=None, eid=None, name="", description=""):
+	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None):
 		# All items can potentially contain other items
-		super().__init__(uid, eid, name, description)
+		super().__init__(uid, eid, name, description, drop_chance)
 		self._equippable = True
 
 	def equip(self, player):
@@ -400,13 +340,10 @@ class Equippable(Item):
 		if self in player.equipped:
 			player.equipped.remove(self)
 
-	def is_equipped(self, player):
-		return self in player.equipped
-
 class Usable(Item):
-	def __init__(self, uid=None, eid=None, name="", description=""):
+	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None):
 		# All items can potentially contain other items
-		super().__init__(uid, eid, name, description)
+		super().__init__(uid, eid, name, description, drop_chance)
 		self._usable = True
 
 	def _on_use(self, player, inventory):
@@ -430,8 +367,8 @@ class Usable(Item):
 			inventory.remove(self)
 
 class CombatItem(Equippable):
-	def __init__(self, uid=None, eid=None, name="", description="", damage=0):
-		super().__init__(uid, eid, name, description)
+	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None, damage=0):
+		super().__init__(uid, eid, name, description, drop_chance)
 		self._damage = damage
 		self._equipable = True
 
@@ -454,8 +391,8 @@ class Weapon(CombatItem): pass
 class Armor(CombatItem): pass
 
 class Food(Usable):
-	def __init__(self, uid=None, eid=None, name="", description="", health=0):
-		super().__init__(uid, eid, name, description)
+	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None, health=0):
+		super().__init__(uid, eid, name, description, drop_chance)
 		self._health = health
 
 	@property
@@ -602,12 +539,14 @@ class Character(Entity):
 
 		# Stats
 		self.health = health
-		self._attack = attack
-		self._resistance = resistance
+		self._base_attack = attack
+		self._base_resistance = resistance
 		
 		# Create an inventory and add any provided items
 		self.inventory = Inventory()
 		self.inventory.update(inventory)
+		_log("Added %s to '%s' inventory" % (inventory, self.eid), level=5)
+		_log("'%s' inventory" % self.eid, self.inventory.get_items(), level=5)
 
 		# Equipable items
 		self.equipped = list()
@@ -626,22 +565,6 @@ class Character(Entity):
 			value = str(value)
 		_log("Changed player '%s' name to '%s'" % (self.name, value))
 		self._name = value
-
-	@property
-	def attack(self, character=None):
-		damage = self._attack
-		if self.has_weapon():
-			damage += self.get_weapon().damage
-		if character:
-			character.damage(damage)
-		return damage
-	
-	@attack.setter
-	def attack(self, value):
-		try:
-			self._attack = int(value)
-		except:
-			pass
 	
 	@property
 	def health(self):
@@ -653,20 +576,34 @@ class Character(Entity):
 			self._health = int(value)
 		except:
 			return	
-		if self._health > 100:
-			self._health = 100
-		elif self._health < 0:
+		if self._health < 0:
 			self._health = 0
 		if self._health == 0:
 			_log("Character '%s' is dead" % self.name, level=2)
 		else:
 			_log("Set '%s' health to '%i'" % (self.name, self.health), level=2)
-	
+
+	## Combat
+	def attack(self, character):
+		damage = self.get_attack_damage()
+		character.damage(damage)
+		return damage
+
+	def get_attack_damage(self):
+		damage = self._base_attack
+		if self.has_weapon():
+			damage += self.get_weapon().damage
+		return damage
+
 	def damage(self, value):
 		try:
-			self.health -= value
+			value = int(value)
 		except:
 			_log("invalid damage '%s'" % value)
+		else:
+			if self.has_armor():
+				value -= self.get_armor().damage * value
+			self.health -= value
 		return self.health
 
 	def is_alive(self):
@@ -707,11 +644,19 @@ class Character(Entity):
 		if isinstance(item, Usable):
 			item.use(self)
 
+	## Get dropped items based on probability
+	def get_dropped_items(self):
+		items = list()
+		for item in self.inventory.get_items():
+			if random.random() <= item.drop_chance:
+				items.append(item)
+		return items
+
 	## Custom inspect command
 	def inspect(self):
 		description = "%s | %i 🗡️ | %i ❤" % (
 			self.name,
-			self.attack,
+			self.get_attack_damage(),
 			self.health
 		)
 		if self.description:
@@ -722,9 +667,6 @@ class Character(Entity):
 				if item.is_equipped(self):
 					description += " [equipped]"
 		return description
-	
-	def __repr__(self):
-		return self.name
 
 class Player(Character): pass
 
@@ -822,11 +764,18 @@ class Room(Entity):
 
 	def remove_monster(self, eid=None, name=None):
 		name = str(name).lower()
+		# Remove monster from monster list
 		for monster in self._monsters:
 			if monster.eid == eid:
 				self._monsters.remove(monster)
 			elif name in monster.name.lower():
 				self._monsters.remove(monster)
+		# Remove room monster if match
+		if self.monster:
+			if self.monster.eid == eid:
+				self.monster = None
+			elif name in self.monster.name:
+				self.monster = None
 
 	def get_monster(self):
 		# If a boss monster exists, return the boss monster
@@ -835,6 +784,9 @@ class Room(Entity):
 				return monster
 		# Else, return a random normal monster or no monster
 		return random.choice(self._monsters + [None])
+
+	def get_monsters(self):
+		return self._monsters
 
 	def enter(self):
 		self.monster = self.get_monster()
@@ -875,11 +827,17 @@ class EntityFactory:
 
 	# Return an entity object based on an entity id
 	def create_entity(self, eid):
+		_log("Creating entity '%s'" % eid, level=4)
 		if eid:
-			eid = str(eid)
-			_log("Creating entity '%s'" % eid, level=4)
+			if isinstance(eid, dict):
+				custom_dict = eid
+				eid = eid.get("id")
+			else:
+				custom_dict = dict()
+				eid = str(eid)
 			entity_dict = self._entities.get(eid)
 			if entity_dict:
+				entity_dict.update(custom_dict)
 				generator = self._get_entity_generator(eid)
 				if generator:
 					return generator(entity_dict)
@@ -911,7 +869,8 @@ class EntityFactory:
 			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
 			description = entity_dict.get("description"),
-			damage = entity_dict.get("equip", dict()).get("armor")
+			damage = entity_dict.get("equip", dict()).get("armor"),
+			drop_chance = entity_dict.get("probability")
 		)
 
 	# Create a boss monster object
@@ -951,7 +910,8 @@ class EntityFactory:
 			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
 			description = entity_dict.get("description"),
-			health = entity_dict.get("health")
+			health = entity_dict.get("health"),
+			drop_chance = entity_dict.get("probability")
 		)
 
 	# Create a key object
@@ -960,29 +920,33 @@ class EntityFactory:
 		return Key(
 			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
-			description = entity_dict.get("description")
+			description = entity_dict.get("description"),
+			drop_chance = entity_dict.get("probability")
 		)
 
 	# Create a monster object
 	def _create_mon(self, entity_dict):
 		# eid, name, description, health, attack, resistance, armor, weapon, inventory
-		# Create the armor if it exists
-		armor = self.create_entity(entity_dict.get("armor"))
-		# Create the weapon if it exists
-		weapon = self.create_entity(entity_dict.get("weapon"))
 		# Create any items in the inventory
-		items = self.create_entities(entity_dict.get("inventory"))
-		inventory = Inventory(items)
+		items = self.create_entities(entity_dict.get("items"))
+		# Grab the weapon and armor from items
+		armor = None
+		weapon = None
+		for item in items:
+			if isinstance(item, Armor):
+				armor = item
+			elif isinstance(item, Weapon):
+				weapon = item
 		return Monster(
 			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
 			description = entity_dict.get("description"),
 			health = entity_dict.get("health"),
 			attack = entity_dict.get("attack"),
-			resistance = entity_dict.get("resistance"),
+			resistance = entity_dict.get("armor"),
 			armor = armor,
 			weapon = weapon,
-			inventory = inventory,
+			inventory = items,
 			is_boss = entity_dict.get("is_boss")
 		)
 
@@ -1023,17 +987,23 @@ class EntityFactory:
 			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
 			description = entity_dict.get("description"),
-			damage = entity_dict.get("equip", dict()).get("attack")
+			damage = entity_dict.get("equip", dict()).get("attack"),
+			drop_chance = entity_dict.get("probability")
 		)
 
 class Map:
 	def __init__(self, rooms=list()):
 		self._rooms = list()
-		self.current_room = None
+		self._room_history = list()
 		for room in rooms:
 			self._add_room(room)
 
 	## Rooms
+	@property
+	def current_room(self):
+		if self._room_history:
+			return self._room_history[-1]
+
 	def add_room(self, room):
 		if isinstance(room, Room):
 			self._rooms.append(room)
@@ -1051,6 +1021,9 @@ class Map:
 				return room
 
 	def get_rooms(self, name=None, door=None):
+		if not name and not door:
+			return self._rooms
+
 		rooms = list()
 		if name:
 			name = str(name).lower()
@@ -1061,16 +1034,36 @@ class Map:
 				rooms.append(room)
 		return rooms
 
-	def change_room(self, eid=None, name=None):
-		if not eid and not name:
+	def change_room(self, eid=None, name=None, history=None):
+		try:
+			history = int(history)
+		except:
+			history = None
+		if history:
+			# If the _room_history has only one entry, don't go back
+			_room_history_len = len(self._room_history)
+			if _room_history_len == 1:
+				return False
+			# Ensure history is no more than _room_history size - 1
+			history_max = _room_history_len - 1
+			history = history_max if history > history_max else history
+			# Set the current room to visited
+			self.current_room.visited = True
+			# Slice the room history
+			self._room_history = self._room_history[:-history]
+			self.current_room.enter()
+			return True
+		elif not eid and not name:
 			room = self.get_random_room()
 		else:
 			room = self.get_room(eid, name)
 		if room:
 			if isinstance(self.current_room, Room):
 				self.current_room.visited = True
-			self.current_room = room
+			self._room_history.append(room)
 			room.enter()
+			return True
+		return False
 
 class Game:
 	"""TODO: Add doc"""
