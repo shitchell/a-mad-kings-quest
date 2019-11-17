@@ -193,8 +193,9 @@ class GameCommandController(CommandController):
 
 	def do_flee(self, *args):
 		"""Make haste to the last room."""
-		self.game.map.change_room(history=1)
-		return self.game.map.current_room.inspect()
+		if self.game.map.change_room(history=1):
+			return self.game.map.current_room.inspect()
+		return "Nowhere to run!"
 
 	### Sue me, sue me, everybody
 	def do_me(self, *args):
@@ -993,14 +994,14 @@ class Map:
 	def __init__(self, rooms=list()):
 		self._rooms = list()
 		self._room_history = list()
-		self.current_room = None
 		for room in rooms:
 			self._add_room(room)
 
 	## Rooms
 	@property
 	def current_room(self):
-		return self._room_history[-1]
+		if self._room_history:
+			return self._room_history[-1]
 
 	def add_room(self, room):
 		if isinstance(room, Room):
@@ -1038,8 +1039,12 @@ class Map:
 		except:
 			history = None
 		if history:
+			# If the _room_history has only one entry, don't go back
+			_room_history_len = len(self._room_history)
+			if _room_history_len == 1:
+				return False
 			# Ensure history is no more than _room_history size - 1
-			history_max = len(self._room_history) - 1
+			history_max = _room_history_len - 1
 			history = history_max if history > history_max else history
 			# Set the current room to visited
 			self.current_room.visited = True
