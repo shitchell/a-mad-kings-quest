@@ -1,9 +1,16 @@
 {
 	"doors": [
 		{
-			"id": "dor001",
-			"key": None,
-			"puzzle": None
+			"id": "dor001"
+		},
+		{
+			"id": "dor002",
+			"key": "key001"
+		},
+		{
+			"id": "dor003",
+			"key": "key005",
+			"puzzle": "puz002"
 		}
 	]
 }
