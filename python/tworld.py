@@ -191,6 +191,11 @@ class GameCommandController(CommandController):
 			output = "No monster in room!"
 		return output
 
+	def do_flee(self, *args):
+		"""Make haste to the last room."""
+		self.game.map.change_room(history=1)
+		return self.game.map.current_room.inspect()
+
 	### Sue me, sue me, everybody
 	def do_me(self, *args):
 	### Kick me, kick me, don't you black or white me
@@ -987,11 +992,16 @@ class EntityFactory:
 class Map:
 	def __init__(self, rooms=list()):
 		self._rooms = list()
+		self._room_history = list()
 		self.current_room = None
 		for room in rooms:
 			self._add_room(room)
 
 	## Rooms
+	@property
+	def current_room(self):
+		return self._room_history[-1]
+
 	def add_room(self, room):
 		if isinstance(room, Room):
 			self._rooms.append(room)
@@ -1022,16 +1032,32 @@ class Map:
 				rooms.append(room)
 		return rooms
 
-	def change_room(self, eid=None, name=None):
-		if not eid and not name:
+	def change_room(self, eid=None, name=None, history=None):
+		try:
+			history = int(history)
+		except:
+			history = None
+		if history:
+			# Ensure history is no more than _room_history size - 1
+			history_max = len(self._room_history) - 1
+			history = history_max if history > history_max else history
+			# Set the current room to visited
+			self.current_room.visited = True
+			# Slice the room history
+			self._room_history = self._room_history[:-history]
+			self.current_room.enter()
+			return True
+		elif not eid and not name:
 			room = self.get_random_room()
 		else:
 			room = self.get_room(eid, name)
 		if room:
 			if isinstance(self.current_room, Room):
 				self.current_room.visited = True
-			self.current_room = room
+			self._room_history.append(room)
 			room.enter()
+			return True
+		return False
 
 class Game:
 	"""TODO: Add doc"""
