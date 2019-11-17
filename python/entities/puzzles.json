@@ -1,63 +1,74 @@
 {
 	"entities": [
 		{
-			"description": "The sun is shining...",
-			# Solutions are provided as a list of md5
-			# hashes of the actual solution. Because
-			# the game lowercases all solutions before
-			# checking them, your solution should be
-			# lowercase before converting to md5 hash
+			"id": "puz001",
+			"description": "What month do all soldiers hate?",
 			"solutions": [
-				"753f8f6a5fbe620cfe474d35e15a616c",
-				"32445c8481ea0526d8e4ae68a9292815"
+				"March"
 			],
-			"hint": "The shadow knows",
-			"area": "A01",
-			# Attempts is optional. Not providing this option
-			# will result in a puzzle that can be attempted
-			# infinite times
-			"attempts": 3,
-			# Drops is optional. Not providing this option or
-			# setting it to null will have no effect once
-			# the puzzle is correctly solved. If the puzzle
-			# is correctly solved, then the puzzle will
-			# drop the given item into the current room
-			"drops": null
+			"hints": [
+				"Soldiers do a lot of this."
+			]
 		},
 		{
-			"description": "http://cdn.shitchell.com/img/q.png",
+			"id": "puz002",
+			"description": "Where does someone who can’t stop thinking about money go?",
 			"solutions": [
-				"a27fa23e7316cb8fb7a57bd11664f2ff"
+				"Headquarters"
 			],
-			"hint": "Cicada 3301",
-			"area": "A03",
-			"attempts": 3,
-			"drops": "Liber Primus"
+			"hints": [
+				"Think “quarters”."
+			]
 		},
 		{
-			"description": "2 + 2",
+			"id": "puz003",
+			"description": "Take off my skin and I won’t cry, but you will. What am I?",
 			"solutions": [
-				"a87ff679a2f3e71d9181a67b7542122c"
+				"Onion"
 			],
-			"hint": "2 * 2",
-			"area": "A04",
-			"attempts": 3,
-			"drops": "Loose Change"
+			"hints": [
+				"These are often used when cooking."
+			]
 		},
 		{
-			"description": "When I am detected,\nMy nature's affected.\nFrom waves of probability\nTo particle stability.",
+			"id": "puz004",
+			"description": "I’m something you do when designing a castle, a boat, or a shoe. What am I?",
 			"solutions": [
-			    "730b4badf792bef64e026438bfed73d4",
-			    "1b85623431169fedc9a20ecf24df3f54",
-			    "23f45c967c9897250c486d79e13c12a1",
-			    "88fe638672e1afacf80e50627a2effe2",
-			    "370757d2df51ae456bf63c165fc71817",
-			    "2b7ff18fb3162ce657f5628b2b8cb5e5"
+				"Draw"
 			],
-			"hint": "spooky action at a distance",
-			"area": "A07",
-			"attempts": 3,
-			"drops": "Photon Gun"
+			"hints": [
+				"Designing” as in what an architect would do."
+			]
+		},
+		{
+			"id": "puz005",
+			"description": "Always wax, yet always wane: I melt, succumbed to the flame. Lighting darkness, with fate unblest, I soon devolve to shapeless mess. What am I?",
+			"solutions": [
+				"Candle"
+			],
+			"hints": [
+				"Popular during blackouts."
+			]
+		},
+		{
+			"id": "puz006",
+			"description": "The alphabet goes from A to Z. What goes from Z to A?",
+			"solutions": [
+				"Zebra"
+			],
+			"hints": [
+				"Native to Africa."
+			]
+		},
+		{
+			"id": "puz007",
+			"description": "What do you call people who are afraid of Santa Claus?",
+			"solutions": [
+				"Claustrophobic"
+			],
+			"hints": [
+				"When you have an irrational fear, we call it a phobia."
+			]
 		}
 	]
 }
