@@ -1,0 +1,29 @@
+{
+	"entities": [
+		{
+			"id": "key001",
+			"name": "Basic Castle Key",
+			"description": "A standard metal key. Accesses a room others aren’t meant to."
+		},
+		{
+			"id": "key002",
+			"name": "Treasure Room Chest Key",
+			"description": "Opens an even treasurey-er treasure."
+		},
+		{
+			"id": "key003",
+			"name": "Storage Key",
+			"description": "This key has “brooms” engraved into it."
+		},
+		{
+			"id": "key004",
+			"name": "Boss Chest Key",
+			"description": "For a boss chest key, it doesn’t appear very different from a normal key."
+		},
+		{
+			"id": "key005",
+			"name": "Treasure Chest Key",
+			"description": "Your key to riches and glory!"
+		}
+	]
+}

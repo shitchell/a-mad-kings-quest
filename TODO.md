@@ -26,8 +26,8 @@
 
 - [ ] map.json
   - [x] add examples
-- [ ] keys.json
-  - [ ] add examples
+- [x] keys.json
+  - [x] add examples
 - [ ] puzzles.json
   - [ ] add examples
 - [x] monsters.json

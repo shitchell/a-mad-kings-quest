@@ -16,8 +16,7 @@
 					"id": "fod002",
 					"probability": 0.01
 				}
-			],
-			"area": "A01"
+			]
 		},
 		{
 			"id": "mon002",
@@ -35,8 +34,7 @@
 					"id": "fod002",
 					"probability": 0.01
 				}
-			],
-			"area": "A02"
+			]
 		},
 		{
 			"id": "mon003",
