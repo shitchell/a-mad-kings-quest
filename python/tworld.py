@@ -172,11 +172,12 @@ class GameCommandController(CommandController):
 			if not monster.is_alive():
 				# Monster is dead
 				self.game.map.current_room.remove_monster(monster.eid)
+				output += "You defeated the monster!"
 				# Get dropped items
 				items = monster.get_dropped_items()
 				if items:
 					self.game.map.current_room.inventory.update(items)
-				output += "he ded"
+					output += "Something fell to the floor..."
 			else:
 				# Monster is alive and well
 				# Attack player

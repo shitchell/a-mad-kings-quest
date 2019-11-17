@@ -13,8 +13,9 @@
   - [ ] command usage
 - [ ] Commands
   - [ ] ensure all output matches SRS
-  - [ ] monster: flee
+  - [x] monster: flee
   - [x] monster: inspect
+  - [ ] monster: bos003 win
 
 ## Misc Coding
 
