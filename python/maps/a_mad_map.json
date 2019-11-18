@@ -21,51 +21,51 @@
 			"id": "dor005"
 		},
 		{
-			"id": "dor006"
-		"key": "key001"
+			"id": "dor006",
+			"key": "key001"
 		},
 		{
-			"id": "dor007"
-		"key": "key003"
+			"id": "dor007",
+			"key": "key003"
 		},
 		{
-			"id": "dor008"
-		"key": "key001"
+			"id": "dor008",
+			"key": "key001"
 		},
 		{
 			"id": "dor009"
 	
 		},
 		{
-			"id": "dor010"
-		"key": "key001"
+			"id": "dor010",
+			"key": "key001"
 		},
 		{
-			"id": "dor011"
-		"puzzle": "puz001"
+			"id": "dor011",
+			"puzzle": "puz001"
 		},
 		{
 			"id": "dor012"
 		},
 		{
-			"id": "dor013"
-		"key": "key003"
+			"id": "dor013",
+			"key": "key003"
 		},
 		{
-			"id": "dor014"
-		"puzzle": "puz007"
+			"id": "dor014",
+			"puzzle": "puz007"
 		},
 		{
-			"id": "dor015"
-		"key": "key001"
+			"id": "dor015",
+			"key": "key001"
 		},
 		{
-			"id": "dor016"
-		"key": "key001"
+			"id": "dor016",
+			"key": "key001"
 		},
 		{
-			"id": "dor017"
-		"key": "key003"
+			"id": "dor017",
+			"key": "key003"
 		},
 		{
 			"id": "dor018"
@@ -89,20 +89,20 @@
 			"id": "dor024"
 		},
 		{
-			"id": "dor025"
-		"puzzle": "puz003"
+			"id": "dor025",
+			"puzzle": "puz003"
 		},
 		{
-			"id": "dor026"
-		"puzzle": "puz004"
+			"id": "dor026",
+			"puzzle": "puz004"
 		},
 		{
-			"id": "dor027"
-		"puzzle": "puz004"
+			"id": "dor027",
+			"puzzle": "puz004"
 		},
 		{
-			"id": "dor028"
-		"puzzle": "puz005"
+			"id": "dor028",
+			"puzzle": "puz005"
 		},
 		{
 			"id": "dor031"
@@ -114,23 +114,12 @@
 			"id": "dor033"
 		},
 		{
-			"id": "dor034"
-		"puzzle": "puz006"
+			"id": "dor034",
+			"puzzle": "puz006"
 		},
 		{
 			"id": "dor035"
-		},
-		
-		
-		
-		
-		
-		
-		
-		
-				
-
-		
+		}
 		## Rooms
 		{
 			"id": "rom001",
