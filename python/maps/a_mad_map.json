@@ -173,6 +173,730 @@
 			"doors": [
 				"dor003"
 			]
+		},
+		{
+			"id": "rom005",
+			"name": "LIbrary",
+			"description": "
+			The shelves seem to reach almost to the ceiling. There are books upon books scattered about. So much knowledge concentrated into one room is magnificent!",
+			"items": [
+				"fod003",
+				"cst3"
+			],
+			"doors": [
+				"dor007"
+			],
+			"monsters": [
+				"mon005",
+				"mon006"
+			]
+		},
+		{
+			"id": "rom006",
+			"name": "Top hallway",
+			"description": "Torches light up the way through the entirety of this hallway.",
+			"items": [
+				"fod001"
+			],
+			"doors": [
+				"dor004",
+				"dor018",
+				"dor019"
+			],
+			"monsters": [
+				"mon001",
+				"mon002"
+			]
+		},
+		{
+			"id": "rom007",
+			"name": "Spice storage",
+			"description": "The smell of spices overwhelms the room. Merchants have to travel miles and miles to get these from the easter lands all the way here.",
+			"items": [
+				"fod004",
+				"fod004",
+				"fod004"
+			],
+			"doors": [
+				"dor017"
+			],
+			"monsters": [
+				"mon005",
+				"mon006"
+			]
+		},
+		{
+			"id": "rom008",
+			"name": "Kitchen",
+			"description": "This is probably everyone’s favorite room, as the castle cooks perform magic here. Corn, wheat, oil, and many kinds of meats populate the kitchen. If only you could cook.",
+			"items": [
+				"fod003",
+				"fod002",
+				"fod001",
+				"fod003"
+			],
+			"doors": [
+				"dor017",
+				"dor016"
+			],
+			"monsters": [
+				"mon003",
+				"mon004"
+			]
+		},
+		{
+			"id": "rom009",
+			"name": "Dining hall",
+			"description": "Some people say the throne room is the most important room in a castle. I, however, prefer the dining hall with its grand table and cushy seats.",
+			"items": [
+				"fod001",
+				"fod001",
+				"fod001"
+			],
+			"doors": [
+				"dor016",
+				"dor009"
+			],
+			"monsters": [
+				"mon001",
+				"mon002"
+			]
+		},
+		{
+			"id": "rom010",
+			"name": "Right Connecting Hall",
+			"description": "This is probably the busiest hallway in all of the castle. It’s the mitochondria of the cell!",
+			"items": [
+				"fod001"
+			],
+			"doors": [
+				"dor005",
+				"dor009",
+				"dor015",
+				"dor008",
+				"dor010"
+			],
+			"monsters": [
+				"mon001",
+				"mon002"
+			]
+		},
+		{
+			"id": "rom011",
+			"name": "Armory",
+			"description": "One of the castles most important rooms, the armory stores every weapon and armor available to the knights and guards. It would be bad news if a stranger were to casually gain access to it.",
+			"items": [
+				"fod002",
+				"cst4"
+			],
+			"doors": [
+				"dor008"
+			],
+			"monsters": [
+				"mon003",
+				"mon004"
+			]
+		},
+		{
+			"id": "rom012",
+			"name": "Barracks",
+			"description": "Sleeping quarters for the castle infantry. Not much to see here save for beds.",
+			"items": [
+				"fod002"
+			],
+			"doors": [
+				"dor012",
+				"dor011"
+			],
+			"monsters": [
+				"mon003",
+				"mon004"
+			]
+		},
+		{
+			"id": "rom013",
+			"name": "Closet",
+			"description": "A closet filled with tools and trinkets.",
+			"items": [
+				"fod002",
+				"cst5"
+			],
+			"doors": [
+				"dor11"
+			],
+			"monsters": [
+				"mon003",
+				"mon004"
+			]
+		},
+		{
+			"id": "rom014",
+			"name": "Musicians Quarters",
+			"description": "Here are the leisure and sleeping quarters for the musicians of the royal family. Imagine how many hours the musicians have practiced in this same room.",
+			"items": [
+				"fod002",
+				"cst6"
+			],
+			"doors": [
+				"dor010"
+			],
+			"monsters": [
+				"mon003",
+				"mon004"
+			]
+		},
+		{
+			"id": "rom015",
+			"name": "Right hallway",
+			"description": "Also known as the longest hallway on the lower level of the castle.",
+			"items": [
+				"fod002",
+			],
+			"doors": [
+				"dor015",
+				"dor013"
+			],
+			"monsters": [
+				"mon003",
+				"mon004"
+			]
+		},
+		{
+			"id": "rom016",
+			"name": "Left top stairs",
+			"description": "They’re stairs. Usually used to ascend.",
+			"items": [
+				"fod001"
+			],
+			"doors": [
+				"dor018",
+				"dor020"
+			],
+			"monsters": [
+				"mon001",
+				"mon002"
+			]
+		},
+		{
+			"id": "rom017",
+			"name": "Right top stairs",
+			"description": "There are quite a bit of stairs in this castle.",
+			"items": [
+				"fod001"
+			],
+			"doors": [
+				"dor019",
+				"dor021"
+			],
+			"monsters": [
+				"mon001",
+				"mon002"
+			]
+		},
+		{
+			"id": "rom018",
+			"name": "Left bottom stairs",
+			"description": "These folks are pretty fanatical about their concrete stairs.",
+			"items": [
+				"fod002"
+			],
+			"doors": [
+				"dor014",
+				"dor032"
+			],
+			"monsters": [
+				"mon003",
+				"mon004"
+			]
+		},
+		{
+			"id": "rom019",
+			"name": "Bottom right stairs",
+			"description": "Surprise, surprise. More stairs...",
+			"items": [
+				"fod003"
+			],
+			"doors": [
+				"dor024",
+				"dor013"
+			],
+			"monsters": [
+				"mon005",
+				"mon006"
+			]
+		},
+		{
+			"id": "rom020",
+			"name": "Left stair hall",
+			"description": "You find yourself wondering if you've been here before.",
+			"items": [
+				"fod002"
+			],
+			"doors": [
+				"dor006",
+				"dor013"
+			],
+			"monsters": [
+				"mon003",
+				"mon004"
+			]
+		},
+		{
+			"id": "rom021",
+			"name": "Stair connector",
+			"description": "Connects the two northern castle towers.",
+			"items": [
+				"fod001"
+			],
+			"doors": [
+				"dor020",
+				"dor021",
+				"dor022",
+				"dor023"
+			],
+			"monsters": [
+				"mon001",
+				"mon002"
+			]
+		},
+		{
+			"id": "rom022",
+			"name": "Generals Room",
+			"description": "The general of the Kingsgard gets his own room. Here he stays up late at night strategizing and making sure the castle stays safe.",
+			"doors": [
+				"dor031",
+				"dor033"
+			],
+			"monsters": [
+				"bos002"
+			]
+		},
+		{
+			"id": "rom23",
+			"name": "West hallway",
+			"description": "This hallway has windows that give you a great view of the very same patch of grass you started your journey at.",
+			"items": [
+				"fod002"
+			],
+			"doors": [
+				"dor025",
+				"dor027",
+				"dor028",
+				"dor031",
+				"dor032"
+			],
+			"monsters": [
+				"mon003",
+				"mon004"
+			]
+		},
+		{
+			"id": "rom024",
+			"name": "Storage room 1",
+			"description": "Storage for the castle",
+			"items": [
+				"fod002",
+				"fod002"
+			],
+			"doors": [
+				"dor032"
+			],
+			"monsters": [
+				"mon001",
+				"mon002"
+			]
+		},
+		{
+			"id": "rom025",
+			"name": "Storage room 2",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
+		},
+		{
+			"id": "rom",
+			"name": "name",
+			"description": "description",
+			"items": [
+				
+			],
+			"doors": [
+				
+			],
+			"monsters": [
+				
+			]
 		}
 	]
 }
