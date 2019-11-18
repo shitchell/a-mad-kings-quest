@@ -48,4 +48,10 @@
 
 # Presentation
 
-- [ ] Everything
+- [x] Everything
+
+# Post-Presentation
+
+- [ ] documentation
+- [ ] line by line mvc
+- [ ] structure of json
