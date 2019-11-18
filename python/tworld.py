@@ -1567,15 +1567,17 @@ def main():
 	# print brief help
 	game.view.output()
 	game.view.output("Type 'help' for help with commands.")
-	
+
 	# welcome message
 	game.view.output()
 	if game.settings.get("welcome"):
 		game.view.output(game.settings.get("welcome"))
 
 	# starting location
-	game.map.change_room()
-	game.view.output( game.map.current_room.inspect())
+	room_id = game.settings.get("start")
+	if not game.map.change_room(eid=room_id):
+		game.map.change_room()
+	game.view.output(game.map.current_room.inspect())
 	game.view.output()
 
 	# Game winning condition

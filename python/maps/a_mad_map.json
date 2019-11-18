@@ -33,28 +33,28 @@
 				"fod001"
 			],
 			"monsters": [
-				"mon001",
+				"mon001"
 			],
-			"doors": {
+			"doors": [
 				"dor001",
 				"dor002",
 				"dor006",
 				"dor004",
 				"dor005",
 				"dor007"
-			}
+			]
 		},
 		{
 			"id": "rom003",
 			"name": "Side hallway",
 			"description": "Looks like a basic hallway.",
 			"monsters": [
-				"bos001",
+				"bos001"
 			],
-			"doors": {
+			"doors": [
 				"dor002",
 				"dor003"
-			}
+			]
 		},
 		{
 			"id": "rom004",
@@ -64,9 +64,9 @@
 				"cst1",
 				"cst2"
 			],
-			"doors": {
+			"doors": [
 				"dor003"
-			}
+			]
 		}
 	]
 }
