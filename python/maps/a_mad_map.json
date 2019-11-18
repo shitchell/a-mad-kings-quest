@@ -177,8 +177,7 @@
 		{
 			"id": "rom005",
 			"name": "LIbrary",
-			"description": "
-			The shelves seem to reach almost to the ceiling. There are books upon books scattered about. So much knowledge concentrated into one room is magnificent!",
+			"description": "The shelves seem to reach almost to the ceiling. There are books upon books scattered about. So much knowledge concentrated into one room is magnificent!",
 			"items": [
 				"fod003",
 				"cst3"
@@ -350,7 +349,7 @@
 			"name": "Right hallway",
 			"description": "Also known as the longest hallway on the lower level of the castle.",
 			"items": [
-				"fod002",
+				"fod002"
 			],
 			"doors": [
 				"dor015",
@@ -509,393 +508,137 @@
 		{
 			"id": "rom025",
 			"name": "Storage room 2",
-			"description": "description",
+			"description": "Even more storage for the castle!",
 			"items": [
-				
+				"fod001",
+				"cst7"
 			],
 			"doors": [
-				
+				"dor023"
 			],
 			"monsters": [
-				
+				"mon001",
+				"mon002"
 			]
 		},
 		{
-			"id": "rom",
+			"id": "rom026",
 			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
+			"description": "In the middle of the room is a GIGANTIC bed. Huh, so this is where the term “king-size” comes from.",
 			"doors": [
-				
+				"dor026"
 			],
 			"monsters": [
-				
+				"bos003"
 			]
 		},
 		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
+			"id": "rom027",
+			"name": "Chefs room",
+			"description": "Maybe not so surprisingly, the head chef keeps ingredients even in his bedroom.",
 			"items": [
-				
+				"fod003",
+				"fod004"
 			],
 			"doors": [
-				
+				"dor025"
 			],
 			"monsters": [
-				
+				"mon003",
+				"mon004"
 			]
 		},
 		{
-			"id": "rom",
+			"id": "rom028",
 			"name": "name",
-			"description": "description",
+			"description": "It’s a mess in here. There’s a host of random things torn apart and crumbled. Looks like the painter’s been experimenting trying to make a new color.",
 			"items": [
-				
+				"fod002",
+				"cst8"
 			],
 			"doors": [
-				
+				"dor027"
 			],
 			"monsters": [
-				
+				"mon003",
+				"mon004"
 			]
 		},
 		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
+			"id": "rom029",
+			"name": "Monks room",
+			"description": "It is eerily quiet here. I guess monks don’t do a whole lot other than pray.",
 			"items": [
-				
+				"fod003",
+				"cst9"
 			],
 			"doors": [
-				
+				"dor018"
 			],
 			"monsters": [
-				
+				"mon003",
+				"mon004"
 			]
 		},
 		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
+			"id": "rom030",
+			"name": "General’s closet",
+			"description": "AHHHH! Oh, it’s just a mouse toy mouse with a little pointy sword.",
 			"items": [
-				
+				"fod004",
+				"cst10"
 			],
 			"doors": [
-				
-			],
-			"monsters": [
-				
+				"dor003"
 			]
 		},
 		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
+			"id": "rom031",
+			"name": "Kid's closet",
+			"description": "There’s a wooden toy horse stowed away in here. It stares at you… menacingly.",
 			"items": [
-				
+				"fod003",
+				"cst11"
 			],
 			"doors": [
-				
+				"dor034"
 			],
 			"monsters": [
-				
+				"mon005",
+				"mon006"
 			]
 		},
 		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
+			"id": "rom033",
+			"name": "Kid's room",
+			"description": "It’s very much like every other bedroom, save for a few more toys and smaller beds.. much smaller.",
 			"items": [
-				
+				"fod003",
+				"cst12"
 			],
 			"doors": [
-				
+				"dor035"
 			],
 			"monsters": [
-				
+				"mon005",
+				"mon006"
 			]
 		},
 		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
+			"id": "rom035",
+			"name": "East hallway",
+			"description": "This hallway has windows that give you a great view of the deep dark woods behind the castle.",
 			"items": [
-				
+				"fod003"
 			],
 			"doors": [
-				
+				"dor024",
+				"dor026",
+				"dor035"
 			],
 			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
-			]
-		},
-		{
-			"id": "rom",
-			"name": "name",
-			"description": "description",
-			"items": [
-				
-			],
-			"doors": [
-				
-			],
-			"monsters": [
-				
+				"mon005",
+				"mon006"
 			]
 		}
 	]

@@ -480,6 +480,13 @@ class GameCommandController(CommandController):
 		return "\n\n".join(rooms)
 
 	@CommandController.admin
+	def do_teleport(self, *args):
+		"""Teleport to a remote room"""
+		if args:
+			eid = args[0]
+			self.game.map.change_room(eid=eid)
+
+	@CommandController.admin
 	def do_debug(self, *args):
 		"""Sets or displays debug level. Higher level increases output"""
 		global DEBUG
