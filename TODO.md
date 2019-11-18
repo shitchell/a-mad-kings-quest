@@ -16,6 +16,8 @@
   - [x] monster: flee
   - [x] monster: inspect
   - [ ] monster: bos003 win
+- [ ] 50% chance of item not spawning in room on first entrance
+- [ ] 20 item max for inventory
 
 ## Misc Coding
 
