@@ -27,7 +27,10 @@ _log_file = open("log.txt", "a")
 def _log(*args, level=3):
 	timestamp = time.strftime("[%Y-%m-%d_%H:%M:%S]")
 	caller = stack()[1][0]
-	caller_class = caller.f_locals["self"].__class__.__qualname__
+	try:
+		caller_class = caller.f_locals["self"].__class__.__qualname__
+	except:
+		caller_class = "__main__"
 	caller_lineno = getframeinfo(caller).lineno
 	preface = "%s <%s:%i>" % (timestamp, caller_class, caller_lineno)
 	if DEBUG >= level:
@@ -408,7 +411,7 @@ class GameCommandController(CommandController):
 			if not monster.is_alive():
 				# Monster is dead
 				self.game.map.current_room.remove_monster(monster.eid)
-				output += "You defeated the monster!"
+				output += "You defeated '%s'!" % monster.name
 				# Get dropped items
 				items = monster.get_dropped_items()
 				if items:
@@ -1412,6 +1415,7 @@ class Game:
 			"map": None,
 			"entities": list()
 		}
+		self._is_won = False
 		self._is_running = True
 		self.cmd_controller = None
 		self.view = None
@@ -1497,8 +1501,19 @@ class Game:
 			if isinstance(entity, Room):
 				self.map.add_room(entity)
 
-	def is_running(self):
+	def is_running(self, value=None):
+		if isinstance(value, bool):
+			self._is_running = value
 		return self._is_running
+
+	def is_won(self, value=None):
+		if isinstance(value, bool):
+			if self.is_won() == False and value == True:
+				message = self.settings.get("win", dict()).get("message")
+				if message:
+					self.view.output(message)
+			self._is_won = value
+		return self._is_won
 
 	def get_character(self, eid=None, name=None):
 		name = str(name).lower()
@@ -1563,6 +1578,10 @@ def main():
 	game.view.output( game.map.current_room.inspect())
 	game.view.output()
 
+	# Game winning condition
+	win_condition = game.settings.get("win")
+	_log("Winning condition", win_condition, level=2)
+
 	# In-game loop
 	while game.is_running() and game.player.is_alive():
 		# run command
@@ -1575,6 +1594,15 @@ def main():
 		output = game.cmd_controller.execute_line(command)
 		if output:
 			game.view.output(output)
+			if win_condition.get("output_contains"):
+				_log("Checking to see if output contains", win_condition.get("output_contains"), level=6)
+				if win_condition.get("output_contains") in output:
+					# The game is won!
+					game.is_won(True)
+			if win_condition.get("output_matches"):
+				if win_condition.get("output_matches") == output:
+					# The game is won!
+					game.is_won(True)
 
 		# aesthetic line space
 		game.view.output()
