@@ -5,6 +5,7 @@ import uuid
 import json
 import time
 import shlex
+import pickle
 import string
 import random
 import hashlib
@@ -80,7 +81,9 @@ class CommandController:
 				except Exception as e:
 					output = str(e)
 				_log("command output:", output, level=5)
-				return output
+				if output:
+					return str(output)
+				return
 			return "%s: command not found" % command
 
 	def get_command(self, command):
@@ -236,6 +239,7 @@ class GameCommandController(CommandController):
 		else:
 			return "Invalid syntax!"
 
+	@CommandController.admin
 	def do_look(self, *args):
 		"""Describe the current location"""
 		return "You're in " + self.game.map.current_room.inspect()
@@ -393,6 +397,7 @@ class GameCommandController(CommandController):
 			else:
 				return "No items in inventory!"
 
+	@CommandController.admin
 	def do_view(self, *args):
 		"""usage: view equipment\nView currently equipped items"""
 		if args and args[0] == "equipment":
@@ -442,6 +447,29 @@ class GameCommandController(CommandController):
 	### Kick me, kick me, don't you black or white me
 		"""Provide player info"""
 		return self.game.player.inspect()
+
+	def do_save(self, *args):
+		"""usage: save\nsave save_name\nSave the current game state"""
+		if args:
+			filename = "_".join(args)
+		else:
+			filename = self.game.player.name
+		filepath = self.game.save(filename)
+		if filepath:
+			return "Saved game to '%s'" % filepath
+		return "Failed to save game"
+
+	def do_load(self, *args):
+		"""usage: load\nload save_name\nRevert to the last save point or load a particular saved game"""
+		if args:
+			filename = "_".join(args)
+		else:
+			filename = self.game.player.name
+		g = self.game.load(filename)
+		if isinstance(g, Game):
+			self.game = g
+			return "Loaded game '%s'" % filename
+		return "Failed to load game '%s'" % filename
 
 	## Admin commands
 	@CommandController.admin
@@ -1413,9 +1441,8 @@ class Map:
 		return False
 
 class Game:
-	"""TODO: Add doc"""
 	# pylint: disable=too-many-instance-attributes
-	def __init__(self, settings_filepath="config.json"):
+	def __init__(self, settings_filepath="config.json", name=None):
 		# Default attributes
 		self._filepaths = {
 			"config": None,
@@ -1424,6 +1451,8 @@ class Game:
 		}
 		self._is_won = False
 		self._is_running = True
+		self._name = name
+		self._save_extension = ".tsave"
 		self.cmd_controller = None
 		self.view = None
 		self.characters = list()
@@ -1465,12 +1494,43 @@ class Game:
 		else:
 			raise MapNotFound()
 
-		# Create characters
-		self.player = Player()
+		# Create character
+		self.player = Player("me")
 		self.characters.append(self.player)
 
 		# Build game map
 		self.build_map(map_entity_ids)
+
+	@property
+	def name(self):
+		return str(self._name or "tworld")
+
+	@property
+	def save_extension(self):
+		return str(self._save_extension)
+
+	def settings_filepath(self, filename=None):
+		if not isinstance(filename, str):
+			filename = self.name
+		return filename + self.save_extension
+
+	def save(self, filename=None):
+		filepath = self.settings_filepath(filename)
+		try:
+			with open(filepath, "wb") as f:
+				pickle.dump(self, f)
+			return filepath
+		except:
+			pass
+
+	def load(self, filename=None):
+		filepath = self.settings_filepath(filename)
+		try:
+			with open(filepath, "rb") as f:
+				return pickle.load(f)
+		except:
+			pass
+		return False
 
 	def create_controller(self, controller):
 		if issubclass(controller, CommandController):

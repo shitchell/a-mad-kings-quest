@@ -1,6 +1,6 @@
 {
 	"name": "A Mad King's Quest",
-	"version": 0.3,
+	"version": 0.5,
 	"ask_name": true,
 #	"welcome": "Take a journey as a mad king",
 	"map": "a_mad_map.json",

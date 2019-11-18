@@ -1,2 +1,12 @@
-log.txt
-.tworld_history
+# Ignore the game log
+**/log.txt
+
+# Ignore the game command history file
+**/.tworld_history
+
+# Ignore any save files
+**/*.tsave
+
+# Ignore any pycache folders
+**/*.pyc
+__pycache__/
