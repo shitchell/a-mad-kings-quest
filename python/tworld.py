@@ -76,7 +76,7 @@ class CommandController:
 					output = func(*args)
 				except Exception as e:
 					output = str(e)
-				_log("command output:", output, level=4)
+				_log("command output:", output, level=5)
 				return output
 			return "%s: command not found" % command
 
@@ -272,7 +272,48 @@ class GameCommandController(CommandController):
 					output += chest.inspect()
 					return output
 			return "Could not find '%s'" % name
-		return self.do_help("open")
+
+	def do_pickup(self, *args):
+		"""usage: pickup item_name\nPickup an item in the current room or chest"""
+		if args:
+			name = " ".join(args)
+			# Collect all items
+			items = self._retrieve_local_entities(room_inventory=True)
+			_log("Pickup candidates:", items, level=4)
+			# Determine if name in items
+			for key in items:
+				if name.lower() in key.lower():
+					# Matched item
+					item = items[key]
+					# Remove from room inventory
+					self.game.map.current_room.inventory.pop(eid=item.eid)
+					self.game.player.inventory.add(item)
+					# Display inventory
+					output = "Player picks up '%s'\n" % item.name
+					output += self.game.player.inspect()
+					return output
+				return "Could not find '%s'" % name
+
+	def do_drop(self, *args):
+		"""usage: pickup item_name\nPickup an item in the current room or chest"""
+		if args:
+			name = " ".join(args)
+			# Collect all items
+			items = self._retrieve_local_entities(player_inventory=True)
+			_log("Drop candidates:", items, level=4)
+			# Determine if name in items
+			for key in items:
+				if name.lower() in key.lower():
+					# Matched item
+					item = items[key]
+					# Remove from room inventory
+					self.game.player.inventory.pop(eid=item.eid)
+					self.game.map.current_room.inventory.add(item)
+					# Display inventory
+					output = "'%s' dropped\n" % item.name
+					output += self.game.player.inspect()
+					return output
+				return "Could not find '%s'" % name
 
 	def do_inventory(self, *args):
 		"""View items in player inventory"""
