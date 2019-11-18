@@ -165,11 +165,11 @@ class GameCommandController(CommandController):
 							output += " and did %i damage" % damage
 						output += "!\n"
 						output += "The monster stopped you from leaving\n"
-						output += self.game.player.inspect()
+						output += self.game.player.inspect_stats()
 						return output
 					door = self.game.map.current_room.get_door(door_id)
 					if door.key and not self.game.player.inventory.contains(eid=door.key.eid):
-						return "Door requires key '%s'" % door.key
+						return "Door requires key '%s'" % door.key.name
 					elif door.puzzle and not door.puzzle.is_solved():
 						# Activate puzzle
 						self.game.view.output("A puzzle blocks the door...")
@@ -182,7 +182,7 @@ class GameCommandController(CommandController):
 							output = controller.execute_line(line)
 							if output:
 								self.game.view.output(output)
-							if controller.is_active()
+							if controller.is_active():
 								self.game.view.output()
 						del controller
 						# Re-enable this controller's tab completion
@@ -210,7 +210,7 @@ class GameCommandController(CommandController):
 		return "You're in " + self.game.map.current_room.inspect()
 
 	def do_inspect(self, *args):
-		"""Inspect a monster in the current room"""
+		"""usage: inspect\nusage: inspect monster\nusage: inspect item\nInspect the current room, a monster in the room, an item in the room, or an item in the player's inventory"""
 		if args:
 			name = " ".join(args)
 			# Collect all inspectable items
@@ -219,18 +219,24 @@ class GameCommandController(CommandController):
 			monster = self.game.map.current_room.monster
 			if monster:
 				items[monster.name] = monster
+			# Room items
+			for item in self.game.map.current_room.inventory.get_items():
+				items[item.name] = item
+			# Player inventory
+			for item in self.game.player.inventory.get_items():
+				items[item.name] = item
 			_log("Inspectable items:", items, level=4)
 			# Determine if name in items
 			for key in items:
 				if name.lower() in key.lower():
 					return items[key].inspect()
 			return "Could not find '%s'" % name
-		return self.do_me()
+		return self.game.map.current_room.inspect()
 
 	def do_inventory(self, *args):
 		"""View items in player inventory"""
-		if self.game.player.inventory:
-			return ", ".join([item.name for item in self.game.player.inventory])
+		if self.game.player.inventory.size() > 0:
+			return ", ".join([item.name for item in self.game.player.inventory.get_items()])
 		else:
 			return "No items in inventory!"
 
@@ -282,14 +288,14 @@ class GameCommandController(CommandController):
 		"""Set player health to value"""
 		if args:
 			self.game.player.health = int(args[0])
-		return self.do_me()
+		return self.game.player.inspect_stats()
 
 	@CommandController.admin
 	def do_set_attack(self, *args):
 		"""Set player attack to value"""
 		if args:
 			self.game.player._base_attack = int(args[0])
-		return self.do_me()
+		return self.game.player.inspect_stats()
 
 	@CommandController.admin
 	def do_rooms(self, *args):
@@ -346,7 +352,7 @@ class GameCommandController(CommandController):
 				output += " '%s'" % entity.name
 				items_added = True
 		if items_added:
-			return output + "\n" + self.do_me()
+			return output + "\n" + self.game.player.inspect()
 		else:
 			return "No valid item ids provided"
 
@@ -774,12 +780,15 @@ class Character(Entity):
 		return items
 
 	## Custom inspect command
-	def inspect(self):
-		description = "%s | %i 🗡️ | %i ❤" % (
+	def inspect_stats(self):
+		return "%s | %i 🗡️ | %i ❤" % (
 			self.name,
 			self.get_attack_damage(),
 			self.health
 		)
+
+	def inspect(self):
+		description = self.inspect_stats()
 		if self.description:
 			description += "\n" + self.description
 		if self.inventory.size() > 0:
@@ -914,7 +923,7 @@ class Room(Entity):
 
 	## Inspect
 	def inspect(self):
-		description = self.description
+		description = "%s: %s" % (self.name, self.description)
 		if self.inventory.size() > 0:
 			description += "\nItems:"
 			for item in self.inventory.get_items():
@@ -1344,7 +1353,7 @@ def main():
 
 	# starting location
 	game.map.change_room()
-	game.view.output("You're in " + game.map.current_room.inspect())
+	game.view.output( game.map.current_room.inspect())
 	game.view.output()
 
 	# In-game loop

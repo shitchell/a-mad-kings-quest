@@ -3,7 +3,8 @@
         ## Doors
         # eid, key, puzzle
         {
-            "id": "dor001"
+            "id": "dor001",
+            "key": "key001"
         },
         {
             "id": "dor002",
