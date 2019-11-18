@@ -148,6 +148,34 @@ class CommandController:
 			return output
 
 class GameCommandController(CommandController):
+	def _retrieve_items(self, inventory):
+		items = dict()
+		for item in inventory.get_items():
+			items[item.name] = item
+			if item.inventory.size() > 0:
+				inner_items = self._retrieve_items(item.inventory)
+				items.update(inner_items)
+		return items
+
+	def _retrieve_local_entities(self, room_inventory=None, player_inventory=None, monster_inventory=None, monster=None):
+	    # If no arguments are True, assume all are True
+		args = [room_inventory, player_inventory, monster_inventory, monster]
+		if True in args:
+			room_inventory = bool(room_inventory)
+			player_inventory = bool(player_inventory)
+			monster_inventory = bool(monster_inventory)
+			monster = bool(monster)
+		items = dict()
+		if room_inventory != False:
+			items.update(self._retrieve_items(self.game.map.current_room.inventory))
+		if player_inventory != False:
+			items.update(self._retrieve_items(self.game.player.inventory))
+		if monster_inventory != False and self.game.map.current_room.monster:
+			items.update(self._retrieve_items(self.game.map.current_room.monster.inventory))
+		if monster != False and self.game.map.current_room.monster:
+			items[self.game.map.current_room.monster.name] = self.game.map.current_room.monster
+		return items
+
 	def do_go(self, *args):
 		"""Move through a door"""
 		if len(args) == 3:
@@ -210,21 +238,11 @@ class GameCommandController(CommandController):
 		return "You're in " + self.game.map.current_room.inspect()
 
 	def do_inspect(self, *args):
-		"""usage: inspect\nusage: inspect monster\nusage: inspect item\nInspect the current room, a monster in the room, an item in the room, or an item in the player's inventory"""
+		"""usage: inspect\nusage: inspect monster_name\nusage: inspect item_name\nInspect the current room, a monster in the room, or any item in the room, player inventory, or monster inventory"""
 		if args:
 			name = " ".join(args)
 			# Collect all inspectable items
-			items = dict()
-			# Monster
-			monster = self.game.map.current_room.monster
-			if monster:
-				items[monster.name] = monster
-			# Room items
-			for item in self.game.map.current_room.inventory.get_items():
-				items[item.name] = item
-			# Player inventory
-			for item in self.game.player.inventory.get_items():
-				items[item.name] = item
+			items = self._retrieve_local_entities()
 			_log("Inspectable items:", items, level=4)
 			# Determine if name in items
 			for key in items:
@@ -232,6 +250,29 @@ class GameCommandController(CommandController):
 					return items[key].inspect()
 			return "Could not find '%s'" % name
 		return self.game.map.current_room.inspect()
+
+	def do_open(self, *args):
+		"""usage: open chest_name\nOpen a chest in the room or player's inventory"""
+		if args:
+			name = " ".join(args)
+			# Collect all inspectable items
+			items = self._retrieve_local_entities(room_inventory=True, player_inventory=True)
+			_log("Chest candidates:", items, level=4)
+			# Determine if name in items
+			for key in items:
+				if name.lower() in key.lower():
+					# Matched chest
+					chest = items[key]
+					output = ""
+					if chest.is_locked():
+						# Check to see if user has key
+						if self.game.player.inventory.contains(eid=chest.key.eid):
+							chest.is_locked(False)
+							output += "Unlocked chest!\n"
+					output += chest.inspect()
+					return output
+			return "Could not find '%s'" % name
+		return self.do_help("open")
 
 	def do_inventory(self, *args):
 		"""View items in player inventory"""
@@ -432,7 +473,38 @@ class Item(Entity):
 	def can_use(self):
 		return self._usable
 
+	def inspect(self):
+		output = super().inspect()
+		for item in self.inventory.get_items():
+			output += "\n- " + item.name
+		return output
+
+
 class Key(Item): pass
+
+class Chest(Item):
+	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None, key=None):
+		super().__init__(uid, eid, name, description)
+		self._key = key
+		self._is_locked = True
+
+	@property
+	def key(self):
+		return self._key
+
+	def is_locked(self, value=None):
+		if isinstance(value, bool):
+			self._is_locked = value
+		return self._is_locked
+
+	def requires_key(self):
+		return isinstance(self._key, Key)
+
+	def inspect(self):
+		if self.is_locked():
+			return "%s [locked: %s]" % (self.name, self._key.name)
+		else:
+			return super().inspect()
 
 class Equippable(Item):
 	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None):
@@ -787,15 +859,30 @@ class Character(Entity):
 			self.health
 		)
 
+	def _retrieve_item_names(self, inventory, depth=1):
+		names = list()
+		for item in inventory.get_items():
+			name = "- "*depth
+			name += item.name
+			if item.is_equipped(self):
+				name += " [equipped]"
+			names.append(name)
+			if item.inventory.size() > 0:
+				if isinstance(item, Chest) and item.is_locked():
+					continue
+				else:
+					subitems = self._retrieve_item_names(item.inventory, depth+1)
+					names.extend(subitems)
+		return names
+
 	def inspect(self):
 		description = self.inspect_stats()
 		if self.description:
 			description += "\n" + self.description
 		if self.inventory.size() > 0:
-			for item in self.inventory.get_items():
-				description += "\n- " + item.name
-				if item.is_equipped(self):
-					description += " [equipped]"
+			names = self._retrieve_item_names(self.inventory)
+			for name in names:
+				description += "\n" + name
 		return description
 
 class Player(Character): pass
@@ -1010,10 +1097,13 @@ class EntityFactory:
 
 	# Create a chest object
 	def _create_cst(self, entity_dict):
-		chest = Item(
+		key_eid = entity_dict.get("key")
+		key = self.create_entity(key_eid)
+		chest = Chest(
 			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
 			description = entity_dict.get("description"),
+			key = key
 		)
 		# Add any contained items
 		items = self.create_entities(entity_dict.get("items"))

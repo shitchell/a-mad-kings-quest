@@ -29,6 +29,10 @@
 - [x] Room.inspect()
 - [x] Inventory.contains(string eid)
 
+# Optional
+
+- [ ] Allow infinitely nested items via recursion
+
 # Config files
 
 - [ ] map.json
