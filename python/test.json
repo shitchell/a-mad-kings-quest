@@ -1,0 +1,11 @@
+{
+	"name": "A Mad King's Quest",
+	"version": 0.1,
+	"ask_name": true,
+	"welcome": "Take a journey as a mad king",
+	"map": "test.json",
+	"win": {
+		"message": "You won!",
+		"output_contains": "You defeated 'Mad King Michael Vsauce II'"
+	}
+}
