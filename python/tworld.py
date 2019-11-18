@@ -512,7 +512,8 @@ class GameCommandController(CommandController):
 		"""Teleport to a remote room"""
 		if args:
 			eid = args[0]
-			self.game.map.change_room(eid=eid)
+			if self.game.map.change_room(eid=eid):
+			    return self.game.map.current_room.inspect()
 
 	@CommandController.admin
 	def do_debug(self, *args):
