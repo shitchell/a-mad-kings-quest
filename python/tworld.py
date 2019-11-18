@@ -238,9 +238,11 @@ class GameCommandController(CommandController):
 		return "You're in " + self.game.map.current_room.inspect()
 
 	def do_inspect(self, *args):
-		"""usage: inspect\nusage: inspect monster_name\nusage: inspect item_name\nInspect the current room, a monster in the room, or any item in the room, player inventory, or monster inventory"""
+		"""usage: inspect room\nusage: inspect monster_name\nusage: inspect item_name\nInspect the current room, a monster in the room, or any item in the room, player inventory, or monster inventory"""
 		if args:
 			name = " ".join(args)
+			if name == "room":
+				return self.game.map.current_room.inspect()
 			# Collect all inspectable items
 			items = self._retrieve_local_entities()
 			_log("Inspectable items:", items, level=4)
@@ -273,6 +275,71 @@ class GameCommandController(CommandController):
 					return output
 			return "Could not find '%s'" % name
 
+	def do_use(self, *args):
+		"""usage: use item_name\nUse a food item in the player's inventory"""
+		if args:
+			name = " ".join(args)
+			# Collect all items
+			items = self._retrieve_local_entities(player_inventory=True)
+			_log("Use candidates:", items, level=4)
+			# Determine if name in items
+			for key in items:
+				if name.lower() in key.lower():
+					# Matched item
+					item = items[key]
+					# Determine if item is usable
+					if not item.can_use():
+						return "You cannot use '%s'" % item.name
+					# Use the item
+					item.use(self.game.player)
+					return "Player eats '%s' and heals %i health to %i" % (item.name, item.health, self.game.player.health)
+			return "Could not find '%s'" % name
+
+	def do_equip(self, *args):
+		"""usage: equip item_name\nEquip an armor or weapon in the player's inventory"""
+		if args:
+			name = " ".join(args)
+			# Collect all items
+			items = self._retrieve_local_entities(player_inventory=True)
+			_log("Equip candidates:", items, level=4)
+			# Determine if name in items
+			for key in items:
+				_log("Comparing", name.lower(), "in", key.lower(), level=5)
+				if name.lower() in key.lower():
+					# Matched item
+					item = items[key]
+					# Determine if item is equipable
+					if not item.can_equip():
+						return "You cannot equip '%s'" % item.name
+					# Equip the item
+					item.equip(self.game.player)
+					return "The player equip %s" % item.name
+			return "Could not find '%s'" % name
+
+	def do_unequip(self, *args):
+		"""usage: unequip item_name\nUnequip an armor or weapon"""
+		if args:
+			name = " ".join(args)
+			# Collect all items
+			items = self._retrieve_local_entities(player_inventory=True)
+			_log("Unequip candidates:", items, level=4)
+			# Determine if name in items
+			for key in items:
+				_log("Comparing", name.lower(), "in", key.lower(), level=5)
+				if name.lower() in key.lower():
+					# Matched item
+					item = items[key]
+					# Determine if item is equipped
+					if item.can_equip() and not item.is_equipped(self.game.player):
+						return "'%s' is not equipped" % item.name
+					elif not item.can_equip():
+						return "'%s' is not an equippable item" % item.name
+					elif item.can_equip and item.is_equipped(self.game.player):
+						# Unequip the item
+						item.unequip(self.game.player)
+						return "The player unequips %s" % item.name
+			return "Could not find '%s'" % name
+
 	def do_pickup(self, *args):
 		"""usage: pickup item_name\nPickup an item in the current room or chest"""
 		if args:
@@ -292,7 +359,7 @@ class GameCommandController(CommandController):
 					output = "Player picks up '%s'\n" % item.name
 					output += self.game.player.inspect()
 					return output
-				return "Could not find '%s'" % name
+			return "Could not find '%s'" % name
 
 	def do_drop(self, *args):
 		"""usage: pickup item_name\nPickup an item in the current room or chest"""
@@ -313,14 +380,23 @@ class GameCommandController(CommandController):
 					output = "'%s' dropped\n" % item.name
 					output += self.game.player.inspect()
 					return output
-				return "Could not find '%s'" % name
+			return "Could not find '%s'" % name
 
-	def do_inventory(self, *args):
-		"""View items in player inventory"""
-		if self.game.player.inventory.size() > 0:
-			return ", ".join([item.name for item in self.game.player.inventory.get_items()])
-		else:
-			return "No items in inventory!"
+	def do_access(self, *args):
+		"""usage: access inventory\nView items in player inventory"""
+		if args and args[0] == "inventory":
+			if self.game.player.inventory.size() > 0:
+				return ", ".join([item.name for item in self.game.player.inventory.get_items()])
+			else:
+				return "No items in inventory!"
+
+	def do_view(self, *args):
+		"""usage: view equipment\nView currently equipped items"""
+		if args and args[0] == "equipment":
+			if self.game.player.equipped:
+				return ", ".join([item.name for item in self.game.player.equipped])
+			else:
+				return "No equipped items!"
 
 	def do_attack(self, *args):
 		"""Try to attack the monster in the current room"""
@@ -584,12 +660,12 @@ class Usable(Item):
 			inventory = player.inventory
 		
 		# Ensure the item exists in the inventory
-		if self in inventory:
+		if inventory.contains(eid=self.eid):
 			# Call the _on_use method. Inheriting classes
 			# should overwrite _on_use() rather than use()
 			self._on_use(player, inventory)
 			# Remove the food item from the inventory
-			inventory.remove(self)
+			inventory.pop(eid=self.eid)
 
 class CombatItem(Equippable):
 	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None, damage=0):
@@ -1171,7 +1247,7 @@ class EntityFactory:
 			eid = entity_dict.get("id"),
 			name = entity_dict.get("name"),
 			description = entity_dict.get("description"),
-			health = entity_dict.get("health"),
+			health = entity_dict.get("use", dict()).get("health"),
 			drop_chance = entity_dict.get("probability")
 		)
 
