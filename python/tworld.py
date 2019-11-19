@@ -686,7 +686,7 @@ class Chest(Item):
 	def __init__(self, uid=None, eid=None, name="", description="", drop_chance=None, key=None):
 		super().__init__(uid, eid, name, description)
 		self._key = key
-		self._is_locked = True
+		self._is_locked = bool(key)
 
 	@property
 	def key(self):
