@@ -68,6 +68,7 @@ class CommandController:
 
 	def execute_line(self, line):
 #		line_parts = shlex.split(line)
+		line = line.strip()
 		line_parts = line.split(" ")
 		if len(line_parts) > 0:
 			_log("Executing line '%s'" % line, level=3)
@@ -129,9 +130,9 @@ class CommandController:
 		sys.exit(1)
 
 	@admin
-	def do_admin(self, *args, **kwargs):
+	def do_whoami(self, *args, **kwargs):
 		"""Tells you if you're an admin"""
-		return "YOU ARE ROOT"
+		return "root"
 
 	@admin
 	def do_commands(self, *args, **kwargs):
@@ -152,6 +153,41 @@ class CommandController:
 			except Exception as e:
 				output = "Exception: " + str(e)
 			return output
+
+class StartCommandController(CommandController):
+	def do_create(self, *args):
+		"""usage: create save_name\nCreate a new game named save_name"""
+		_log("Creating new game from args", args, level=6)
+		if args:
+			name = "_".join(args)
+		else:
+			name = "tworld"
+		self.game.name = name
+		self.game.save()
+		# switch command controllers
+		self.game.register_controller(GameCommandController)
+		# new game output
+		output = "Created new game '%s'\n" % name
+		output += self.game.map.current_room.inspect()
+		return output
+
+	def do_load(self, *args):
+		"""usage: load save_name\nLoad a saved game"""
+		if args:
+			name = "_".join(args)
+		else:
+			name = "tworld"
+		self.game.name = name
+		g = self.game.load()
+		if isinstance(g, Game):
+			self.game.copy(g)
+			# switch command controllers
+			self.game.register_controller(GameCommandController)
+			# load game output
+			output =  "Loaded game '%s'\n" % name
+			output += self.game.map.current_room.inspect()
+			return output
+		return "Failed to load game '%s'" % name
 
 class GameCommandController(CommandController):
 	def _retrieve_items(self, inventory):
@@ -453,13 +489,13 @@ class GameCommandController(CommandController):
 		if args:
 			filename = "_".join(args)
 		else:
-			filename = self.game.player.name
+			filename = self.game.name
 		filepath = self.game.save(filename)
 		if filepath:
 			return "Saved game to '%s'" % filepath
 		return "Failed to save game"
 
-	def do_load(self, *args):
+	def do_loadgame(self, *args):
 		"""usage: load\nload save_name\nRevert to the last save point or load a particular saved game"""
 		if args:
 			filename = "_".join(args)
@@ -468,7 +504,9 @@ class GameCommandController(CommandController):
 		g = self.game.load(filename)
 		if isinstance(g, Game):
 			self.game = g
-			return "Loaded game '%s'" % filename
+			output = "Loaded game '%s'\n" % filename
+			output += self.game.map.current_room.inspect()
+			return output
 		return "Failed to load game '%s'" % filename
 
 	## Admin commands
@@ -1506,6 +1544,10 @@ class Game:
 	def name(self):
 		return str(self._name or "tworld")
 
+	@name.setter
+	def name(self, value):
+		self._name = str(value)
+
 	@property
 	def save_extension(self):
 		return str(self._save_extension)
@@ -1535,10 +1577,13 @@ class Game:
 
 	def create_controller(self, controller):
 		if issubclass(controller, CommandController):
+			_log("Creating controller", controller, level=6)
 			return controller(self)
 
 	def register_controller(self, controller):
+		_log("Registering controller", controller, level=6)
 		self.cmd_controller = self.create_controller(controller)
+		_log("Current game controller", self.cmd_controller, level=6)
 
 	def create_view(self, view):
 		if issubclass(view, View):
@@ -1591,6 +1636,10 @@ class Game:
 			elif name in character.name.lower():
 				return character
 
+	# Copy game state
+	def copy(self, game):
+		self.__dict__ = game.__dict__.copy()
+
 class View: pass
 
 class TUI(View):
@@ -1621,7 +1670,7 @@ def main():
 		config_path = "config.json"
 		
 	game = Game(config_path)
-	game.register_controller(GameCommandController)
+	game.register_controller(StartCommandController)
 	game.register_view(TUI)
 
     # map info
@@ -1645,8 +1694,8 @@ def main():
 	room_id = game.settings.get("start")
 	if not game.map.change_room(eid=room_id):
 		game.map.change_room()
-	game.view.output(game.map.current_room.inspect())
-	game.view.output()
+#	game.view.output(game.map.current_room.inspect())
+#	game.view.output()
 
 	# Game winning condition
 	win_condition = game.settings.get("win")
@@ -1661,6 +1710,7 @@ def main():
 			game.view.output()
 			continue
 
+		_log("Sending command '%s' to controller '%s'" % (command, game.cmd_controller), level=5)
 		output = game.cmd_controller.execute_line(command)
 		if output:
 			game.view.output(output)
