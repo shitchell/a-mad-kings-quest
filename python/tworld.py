@@ -1552,13 +1552,13 @@ class Game:
 	def save_extension(self):
 		return str(self._save_extension)
 
-	def settings_filepath(self, filename=None):
+	def save_filepath(self, filename=None):
 		if not isinstance(filename, str):
 			filename = self.name
-		return filename + self.save_extension
+		return "." + filename + self.save_extension
 
 	def save(self, filename=None):
-		filepath = self.settings_filepath(filename)
+		filepath = self.save_filepath(filename)
 		try:
 			with open(filepath, "wb") as f:
 				pickle.dump(self, f)
@@ -1567,7 +1567,7 @@ class Game:
 			pass
 
 	def load(self, filename=None):
-		filepath = self.settings_filepath(filename)
+		filepath = self.save_filepath(filename)
 		try:
 			with open(filepath, "rb") as f:
 				return pickle.load(f)
@@ -1594,7 +1594,7 @@ class Game:
 
 	def read_settings(self, filepath=None):
 		if not filepath:
-			filepath = self.settings_filepath
+			filepath = self._filepaths.get("config")
 		try:
 			with open(filepath) as settings_file:
 				data = settings_file.read()
