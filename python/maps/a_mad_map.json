@@ -595,7 +595,7 @@
 		{
 			"id": "rom031",
 			"name": "Kid's closet",
-			"description": "There’s a wooden toy horse stowed away in here. It stares at you… menacingly.",
+			"description": "There’s a wooden toy horse stowed away in here. It stares at you... menacingly.",
 			"items": [
 				"fod003",
 				"cst11"
