@@ -189,6 +189,12 @@ class StartCommandController(CommandController):
 			return output
 		return "Failed to load game '%s'" % name
 
+	def do_games(self, *args):
+		"""usage: games\nView saved games"""
+		filenames = [x for x in os.listdir(".") if x.endswith(self.game._save_extension)]
+		filenames = [x[1:-6] for x in filenames]
+		return "\t".join(filenames)
+
 class GameCommandController(CommandController):
 	def _retrieve_items(self, inventory):
 		items = dict()
