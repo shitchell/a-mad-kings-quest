@@ -524,7 +524,7 @@
 		{
 			"id": "rom026",
 			"name": "name",
-			"description": "In the middle of the room is a GIGANTIC bed. Huh, so this is where the term “king-size” comes from.",
+			"description": "In the middle of the room is a GIGANTIC bed. Huh, so this is where the term \"king-size\" comes from.",
 			"doors": [
 				"dor026"
 			],
