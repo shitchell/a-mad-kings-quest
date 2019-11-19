@@ -442,7 +442,6 @@ class GameCommandController(CommandController):
 			else:
 				return "No items in inventory!"
 
-	@CommandController.admin
 	def do_view(self, *args):
 		"""usage: view equipment\nView currently equipped items"""
 		if args and args[0] == "equipment":
