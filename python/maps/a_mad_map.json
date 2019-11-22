@@ -176,7 +176,7 @@
 		},
 		{
 			"id": "rom005",
-			"name": "LIbrary",
+			"name": "Library",
 			"description": "The shelves seem to reach almost to the ceiling. There are books upon books scattered about. So much knowledge concentrated into one room is magnificent!",
 			"items": [
 				"fod003",
@@ -321,7 +321,7 @@
 				"cst5"
 			],
 			"doors": [
-				"dor11"
+				"dor011"
 			],
 			"monsters": [
 				"mon003",
@@ -353,7 +353,8 @@
 			],
 			"doors": [
 				"dor015",
-				"dor013"
+				"dor013",
+				"dor012"
 			],
 			"monsters": [
 				"mon003",
@@ -433,7 +434,8 @@
 			],
 			"doors": [
 				"dor006",
-				"dor013"
+				"dor014",
+				"dor033"
 			],
 			"monsters": [
 				"mon003",
@@ -463,15 +465,14 @@
 			"name": "Generals Room",
 			"description": "The general of the Kingsgard gets his own room. Here he stays up late at night strategizing and making sure the castle stays safe.",
 			"doors": [
-				"dor031",
-				"dor033"
+				"dor031"
 			],
 			"monsters": [
 				"bos002"
 			]
 		},
 		{
-			"id": "rom23",
+			"id": "rom023",
 			"name": "West hallway",
 			"description": "This hallway has windows that give you a great view of the very same patch of grass you started your journey at.",
 			"items": [
@@ -498,7 +499,7 @@
 				"fod002"
 			],
 			"doors": [
-				"dor032"
+				"dor022"
 			],
 			"monsters": [
 				"mon001",
@@ -523,7 +524,7 @@
 		},
 		{
 			"id": "rom026",
-			"name": "name",
+			"name": "Kings bedroom",
 			"description": "In the middle of the room is a GIGANTIC bed. Huh, so this is where the term \"king-size\" comes from.",
 			"doors": [
 				"dor026"
@@ -550,7 +551,7 @@
 		},
 		{
 			"id": "rom028",
-			"name": "name",
+			"name": "Painters room",
 			"description": "It’s a mess in here. There’s a host of random things torn apart and crumbled. Looks like the painter’s been experimenting trying to make a new color.",
 			"items": [
 				"fod002",
@@ -573,7 +574,7 @@
 				"cst9"
 			],
 			"doors": [
-				"dor018"
+				"dor028"
 			],
 			"monsters": [
 				"mon003",
@@ -589,7 +590,7 @@
 				"cst10"
 			],
 			"doors": [
-				"dor003"
+				"dor033"
 			]
 		},
 		{
@@ -617,6 +618,7 @@
 				"cst12"
 			],
 			"doors": [
+				"dor034",
 				"dor035"
 			],
 			"monsters": [
