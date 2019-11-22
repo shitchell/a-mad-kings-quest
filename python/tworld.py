@@ -117,19 +117,25 @@ class CommandController:
 		return wrapper
 	
 	def do_help(self, *args, **kwargs):
-		"""Prints help wth the game or a specific command"""
+		"""usage: help
+		   usage: help command_name
+		   Prints help wth the game or a specific command"""
 		if args:
 			cmd = args[0]
 			cmd = self.get_command(cmd)
 			if cmd:
-				return cmd.__doc__
+				doc = cmd.__doc__
+				doc = doc.split("\n")
+				doc = [x.strip() for x in doc]
+				return "\n".join(doc)
 			else:
 				return "No such command!"
 		else:
 			return "Commands: " + ", ".join(self.get_command_names())
 
 	def do_quit(self, *args, **kwargs):
-		"""Exit the game"""
+		"""usage: quit
+		   Exit the game"""
 		sys.exit(1)
 
 	@admin
@@ -139,12 +145,14 @@ class CommandController:
 
 	@admin
 	def do_commands(self, *args, **kwargs):
-		"""Return all commands and functions"""
+		"""usage: commands
+		   Return all commands and functions"""
 		return self.get_commands()
 
 	@admin
 	def do_eval(self, *args):
-		"""Execute a python statement"""
+		"""usage: eval code
+		   Execute a python statement"""
 		if args:
 			line = " ".join(args)
 			try:
@@ -159,7 +167,8 @@ class CommandController:
 
 class StartCommandController(CommandController):
 	def do_create(self, *args):
-		"""usage: create save_name\nCreate a new game named save_name"""
+		"""usage: create save_name
+		   Create a new game named save_name"""
 		_log("Creating new game from args", args, level=6)
 		if args:
 			name = "_".join(args)
@@ -175,7 +184,8 @@ class StartCommandController(CommandController):
 		return output
 
 	def do_load(self, *args):
-		"""usage: load save_name\nLoad a saved game"""
+		"""usage: load save_name
+		   Load a saved game"""
 		if args:
 			name = "_".join(args)
 		else:
@@ -193,7 +203,8 @@ class StartCommandController(CommandController):
 		return "Failed to load game '%s'" % name
 
 	def do_games(self, *args):
-		"""usage: games\nView saved games"""
+		"""usage: games
+		   View saved games"""
 		filenames = [x for x in os.listdir(".") if x.endswith(self.game._save_extension)]
 		filenames = [x[1:-6] for x in filenames]
 		return "\t".join(filenames)
@@ -229,7 +240,8 @@ class GameCommandController(CommandController):
 		return items
 
 	def do_go(self, *args):
-		"""Move through a door"""
+		"""usage: go through door door_id
+		   Move through a door"""
 		if len(args) == 3:
 			if args[0] == "through" and args[1] == "door":
 				door_id = args[2]
@@ -283,15 +295,19 @@ class GameCommandController(CommandController):
 				else:
 					return "No such door in current room"
 		else:
-			return "Invalid syntax!"
+			return self.do_help("go")
 
 	@CommandController.admin
 	def do_look(self, *args):
-		"""Describe the current location"""
+		"""usage: look
+		   Describe the current location"""
 		return "You're in " + self.game.map.current_room.inspect()
 
 	def do_inspect(self, *args):
-		"""usage: inspect room\nusage: inspect monster_name\nusage: inspect item_name\nInspect the current room, a monster in the room, or any item in the room, player inventory, or monster inventory"""
+		"""usage: inspect room
+		   usage: inspect monster_name
+		   usage: inspect item_name
+		   Inspect the current room, a monster in the room, or any item in the room, player inventory, or monster inventory"""
 		if args:
 			name = " ".join(args)
 			if name == "room":
@@ -307,7 +323,8 @@ class GameCommandController(CommandController):
 		return self.game.map.current_room.inspect()
 
 	def do_open(self, *args):
-		"""usage: open chest_name\nOpen a chest in the room or player's inventory"""
+		"""usage: open chest_name
+		   Unlock a chest in the room or player's inventory"""
 		if args:
 			name = " ".join(args)
 			# Collect all inspectable items
@@ -329,7 +346,8 @@ class GameCommandController(CommandController):
 			return "Could not find '%s'" % name
 
 	def do_use(self, *args):
-		"""usage: use item_name\nUse a food item in the player's inventory"""
+		"""usage: use item_name
+		   Use a food item in the player's inventory"""
 		if args:
 			name = " ".join(args)
 			# Collect all items
@@ -349,7 +367,8 @@ class GameCommandController(CommandController):
 			return "Could not find '%s'" % name
 
 	def do_equip(self, *args):
-		"""usage: equip item_name\nEquip an armor or weapon in the player's inventory"""
+		"""usage: equip item_name
+		   Equip an armor or weapon in the player's inventory"""
 		if args:
 			name = " ".join(args)
 			# Collect all items
@@ -368,9 +387,11 @@ class GameCommandController(CommandController):
 					item.equip(self.game.player)
 					return "The player equip %s" % item.name
 			return "Could not find '%s'" % name
+		return self.do_help("equip")
 
 	def do_unequip(self, *args):
-		"""usage: unequip item_name\nUnequip an armor or weapon"""
+		"""usage: unequip item_name
+		   Unequip an armor or weapon"""
 		if args:
 			name = " ".join(args)
 			# Collect all items
@@ -392,9 +413,11 @@ class GameCommandController(CommandController):
 						item.unequip(self.game.player)
 						return "The player unequips %s" % item.name
 			return "Could not find '%s'" % name
+		return self.do_help("unequip")
 
 	def do_pickup(self, *args):
-		"""usage: pickup item_name\nPickup an item in the current room or chest"""
+		"""usage: pickup item_name
+		   Pickup an item in the current room or chest"""
 		if args:
 			name = " ".join(args)
 			# Collect all items
@@ -413,9 +436,11 @@ class GameCommandController(CommandController):
 					output += self.game.player.inspect()
 					return output
 			return "Could not find '%s'" % name
+		return self.do_help("pickup")
 
 	def do_drop(self, *args):
-		"""usage: pickup item_name\nPickup an item in the current room or chest"""
+		"""usage: drop item_name
+		   Remove an item from the player's inventory and drop it in the current room."""
 		if args:
 			name = " ".join(args)
 			# Collect all items
@@ -434,25 +459,31 @@ class GameCommandController(CommandController):
 					output += self.game.player.inspect()
 					return output
 			return "Could not find '%s'" % name
+		return self.do_help("drop")
 
 	def do_access(self, *args):
-		"""usage: access inventory\nView items in player inventory"""
+		"""usage: access inventory
+		   View items in player inventory"""
 		if args and args[0] == "inventory":
 			if self.game.player.inventory.size() > 0:
 				return ", ".join([item.name for item in self.game.player.inventory.get_items()])
 			else:
 				return "No items in inventory!"
+		return self.do_help("access")
 
 	def do_view(self, *args):
-		"""usage: view equipment\nView currently equipped items"""
+		"""usage: view equipment
+		   View currently equipped items"""
 		if args and args[0] == "equipment":
 			if self.game.player.equipped:
 				return ", ".join([item.name for item in self.game.player.equipped])
 			else:
 				return "No equipped items!"
+		return self.do_help("view")
 
 	def do_attack(self, *args):
-		"""Try to attack the monster in the current room"""
+		"""usage: attack
+		   Try to attack the monster in the current room"""
 		monster = self.game.map.current_room.monster
 		player = self.game.player
 		if monster:
@@ -482,7 +513,8 @@ class GameCommandController(CommandController):
 		return output
 
 	def do_flee(self, *args):
-		"""Make haste to the last room."""
+		"""usage: flee
+		   Make haste to the last room."""
 		if self.game.map.change_room(history=1):
 			return self.game.map.current_room.inspect()
 		return "Nowhere to run!"
@@ -490,11 +522,14 @@ class GameCommandController(CommandController):
 	### Sue me, sue me, everybody
 	def do_me(self, *args):
 	### Kick me, kick me, don't you black or white me
-		"""Provide player info"""
+		"""usage: me
+		   Provide player info"""
 		return self.game.player.inspect()
 
 	def do_save(self, *args):
-		"""usage: save\nsave save_name\nSave the current game state"""
+		"""usage: save
+		   usage: save save_name
+		   usage: save the current game state"""
 		if args:
 			filename = "_".join(args)
 		else:
@@ -504,8 +539,10 @@ class GameCommandController(CommandController):
 			return "Saved game to '%s'" % filepath
 		return "Failed to save game"
 
-	def do_loadgame(self, *args):
-		"""usage: load\nload save_name\nRevert to the last save point or load a particular saved game"""
+	def do_load(self, *args):
+		"""usage: load
+		   usage: load save_name
+		   Revert to the last save point or load a particular saved game"""
 		if args:
 			filename = "_".join(args)
 		else:
@@ -521,27 +558,31 @@ class GameCommandController(CommandController):
 	## Admin commands
 	@CommandController.admin
 	def do_set_health(self, *args):
-		"""Set player health to value"""
+		"""usage: set_health num
+		   Set player health to value"""
 		if args:
 			self.game.player.health = int(args[0])
 		return self.game.player.inspect_stats()
 
 	@CommandController.admin
 	def do_set_attack(self, *args):
-		"""Set player attack to value"""
+		"""usage: set_attack num
+		   Set player attack to value"""
 		if args:
 			self.game.player._base_attack = int(args[0])
 		return self.game.player.inspect_stats()
 
 	@CommandController.admin
 	def do_rooms(self, *args):
-		"""View list of all rooms"""
+		"""usage: rooms
+		   View list of all rooms"""
 		rooms = [room.eid + ": " + room.name for room in self.game.map.get_rooms()]
 		return "\n".join(rooms)
 
 	@CommandController.admin
 	def do_room(self, *args):
-		"""Remotely inspect any room by ID"""
+		"""usage: room room_id1 room_id2...
+		   Remotely inspect any room by ID"""
 		rooms = list()
 		for arg in args:
 			room = self.game.map.get_room(arg, arg)
@@ -556,7 +597,8 @@ class GameCommandController(CommandController):
 
 	@CommandController.admin
 	def do_teleport(self, *args):
-		"""Teleport to a remote room"""
+		"""usage: teleport room_id
+		   Teleport to a remote room"""
 		if args:
 			eid = args[0]
 			if self.game.map.change_room(eid=eid):
@@ -564,7 +606,9 @@ class GameCommandController(CommandController):
 
 	@CommandController.admin
 	def do_debug(self, *args):
-		"""Sets or displays debug level. Higher level increases output"""
+		"""usage: debug
+		   usage: debug num
+		   Display or set the debug level. Higher level increases output"""
 		global DEBUG
 		if args:
 			try:
@@ -575,7 +619,8 @@ class GameCommandController(CommandController):
 
 	@CommandController.admin
 	def do_items(self, *args):
-		"""Return a list of items on the map and their locations"""
+		"""usage: items
+		   Return a list of items on the map and their locations"""
 		room_items = list()
 		for room in self.game.map.get_rooms():
 			for item in room.inventory.get_items():
@@ -586,7 +631,8 @@ class GameCommandController(CommandController):
 
 	@CommandController.admin
 	def do_give(self, *args):
-		"""usage: give item_1 item_2...\nAdd items to your inventory"""
+		"""usage: give item_1 item_2...
+		   Add items to your inventory"""
 		output = "Added"
 		items_added = False
 		for eid in args:
@@ -602,7 +648,8 @@ class GameCommandController(CommandController):
 
 	@CommandController.admin
 	def do_monsters(self, *args):
-		"""Return a list of monsters on the map and their locations"""
+		"""usage: monsters
+		   Return a list of monsters on the map and their locations"""
 		room_monsters = list()
 		for room in self.game.map.get_rooms():
 			for monster in room.get_monsters():
@@ -615,7 +662,8 @@ class PuzzleCommandController(CommandController):
 		self.puzzle = puzzle
 
 	def do_solve(self, *args):
-		"""usage: solve answer\nAttempt to solve the puzzle"""
+		"""usage: solve answer
+		   Attempt to solve the puzzle"""
 		answer = " ".join(args)
 		if self.puzzle.solve(answer):
 			self.is_active(False)
@@ -623,20 +671,24 @@ class PuzzleCommandController(CommandController):
 		return "Incorrect"
 
 	def do_hint(self, *args):
-		"""usage: hint\nReceive a hint for the puzzle"""
+		"""usage: hint
+		   Receive a hint for the puzzle"""
 		return self.puzzle.get_hint()
 
 	def do_ignore(self, *args):
-		"""usage: ignore\nIgnore the puzzle and leave it unsolved"""
+		"""usage: ignore
+		   Ignore the puzzle and leave it unsolved"""
 		self.is_active(False)
 
 	def do_inspect(self, *args):
-		"""usage: inspect\nView the puzzle description"""
+		"""usage: inspect
+		   View the puzzle description"""
 		return self.puzzle.inspect()
 
 	@CommandController.admin
 	def do_solution(self, *args):
-		"""Provide the puzzle solution"""
+		"""usage: solution
+		   Provide the puzzle solution"""
 		solutions = list()
 		for x in range(len(self.puzzle._solutions)):
 		    solutions.append("%i: %s" % (x + 1, self.puzzle._solutions[x]))
