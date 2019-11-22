@@ -202,6 +202,7 @@ class GameCommandController(CommandController):
 	def _retrieve_items(self, inventory):
 		items = dict()
 		for item in inventory.get_items():
+			item.parent = inventory
 			items[item.name] = item
 			if item.inventory.size() > 0:
 				inner_items = self._retrieve_items(item.inventory)
@@ -405,7 +406,7 @@ class GameCommandController(CommandController):
 					# Matched item
 					item = items[key]
 					# Remove from room inventory
-					self.game.map.current_room.inventory.pop(eid=item.eid)
+					item.parent.pop(eid=item.eid)
 					self.game.player.inventory.add(item)
 					# Display inventory
 					output = "Player picks up '%s'\n" % item.name
