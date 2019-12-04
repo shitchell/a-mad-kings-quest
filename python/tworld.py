@@ -15,7 +15,10 @@ import hashlib
 try:
 	import readline
 except:
-	import pyreadline as readline
+	try:
+		import pyreadline as readline
+	except:
+		pass
 from inspect import getframeinfo, stack
 
 # Exceptions
@@ -61,8 +64,10 @@ class CommandController:
 			return None
 
 	def enable_completion(self):
-		readline.parse_and_bind("tab: complete")
-		readline.set_completer(self._completer)
+		# Ensure readline library has been loaded
+		if "readline" in globals():
+			readline.parse_and_bind("tab: complete")
+			readline.set_completer(self._completer)
 
 	def is_active(self, value=None):
 		if isinstance(value, bool):
@@ -1711,9 +1716,9 @@ class TUI(View):
 		histfile = ".tworld_history"
 		try:
 			readline.read_history_file(histfile)
-		except IOError:
+			atexit.register(readline.write_history_file, histfile)
+		except (IOError, NameError):
 			pass
-		atexit.register(readline.write_history_file, histfile)
 
 	def input(self, prompt=None):
 		if prompt == None:
