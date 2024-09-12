@@ -10,3 +10,6 @@
 # Ignore any pycache folders
 **/*.pyc
 __pycache__/
+
+# Pyenv
+.python-version
